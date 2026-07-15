@@ -1,0 +1,143 @@
+/* SSH Page Styles */
+
+.ssh-container {
+  padding-bottom: 2rem;
+  transition: opacity 0.3s ease;
+}
+
+.ssh-container.refresh-animate {
+  opacity: 0.7;
+}
+
+.ssh-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.ssh-title {
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--text-color);
+  margin-bottom: 0.25rem;
+}
+
+.ssh-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Toolbar search and actions */
+.ssh-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ssh-search {
+  max-width: 320px;
+  flex-grow: 1;
+}
+
+/* Stat Cards */
+.ssh-stat-card {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ssh-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--text-secondary) !important;
+}
+
+/* Custom Table Card */
+.ssh-table-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.ssh-table {
+  width: 100%;
+  margin-bottom: 0;
+  color: var(--text-color);
+  border-collapse: collapse;
+}
+
+.ssh-table th {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 1rem;
+}
+
+.ssh-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.ssh-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ssh-table tr {
+  transition: background-color 0.15s ease;
+}
+
+.ssh-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Empty, Loading & Error States Placeholders */
+.placeholder-loading-row td {
+  position: relative;
+  overflow: hidden;
+}
+
+.placeholder-loading-row td::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 20%,
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: ssh-shimmer 1.5s infinite;
+}
+
+@keyframes ssh-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-text {
+  height: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  width: 80%;
+}
+
+.skeleton-text.short {
+  width: 40%;
+}

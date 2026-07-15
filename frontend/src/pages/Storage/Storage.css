@@ -1,0 +1,335 @@
+/* Storage Page Styles */
+
+.storage-container {
+  padding-bottom: 2rem;
+  transition: opacity 0.3s ease;
+}
+
+.storage-container.refresh-animate {
+  opacity: 0.7;
+}
+
+.storage-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.storage-title {
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--text-color);
+  margin-bottom: 0.25rem;
+}
+
+.storage-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Toolbar search and actions */
+.storage-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.storage-search {
+  max-width: 320px;
+  flex-grow: 1;
+}
+
+/* Metric Cards */
+.metric-card {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--text-secondary) !important;
+}
+
+/* Custom Table Card */
+.storage-table-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.storage-table {
+  width: 100%;
+  margin-bottom: 0;
+  color: var(--text-color);
+  border-collapse: collapse;
+}
+
+.storage-table th {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 1rem;
+}
+
+.storage-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.storage-table tr:last-child td {
+  border-bottom: none;
+}
+
+.storage-table tr {
+  transition: background-color 0.15s ease;
+}
+
+.storage-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Action buttons */
+.btn-storage-action {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+}
+
+.btn-storage-action:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  border-color: var(--text-secondary);
+}
+
+.btn-storage-action.btn-details.active {
+  background-color: rgba(0, 120, 212, 0.1);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Split Screen Layout */
+.storage-main-layout {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+  align-items: flex-start;
+}
+
+.storage-left-col {
+  flex: 0 0 70%;
+  max-width: 70%;
+  transition: all 0.3s ease;
+  min-width: 0;
+}
+
+.storage-right-col {
+  flex: 0 0 30%;
+  max-width: 30%;
+  min-width: 0;
+}
+
+.storage-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  border-left: 3px solid var(--primary-color);
+  padding-left: 0.5rem;
+}
+
+.disk-card {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.disk-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Driver status badges */
+.driver-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.driver-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.badge-bridge {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.bg-success-soft {
+  background-color: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+.bg-warning-soft {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.bg-secondary-soft {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Right side drawer */
+.storage-details-panel {
+  width: 390px;
+  min-width: 390px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  height: calc(100vh - var(--navbar-height) - var(--footer-height) - 4rem);
+  position: sticky;
+  top: 2rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.storage-panel-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+.storage-panel-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.storage-detail-group-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.25rem;
+}
+
+.storage-detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.storage-detail-label {
+  color: var(--text-secondary);
+}
+
+.storage-detail-value {
+  color: var(--text-color);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-all;
+  max-width: 60%;
+}
+
+/* Empty, Loading & Error States Placeholders */
+.placeholder-loading-row td {
+  position: relative;
+  overflow: hidden;
+}
+
+.placeholder-loading-row td::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 20%,
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: storage-shimmer 1.5s infinite;
+}
+
+@keyframes storage-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-text {
+  height: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  width: 80%;
+}
+
+.skeleton-text.short {
+  width: 40%;
+}
+
+/* Responsive panel overrides */
+@media (max-width: 991.98px) {
+  .storage-main-layout {
+    flex-direction: column;
+  }
+  .storage-left-col, .storage-right-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .storage-right-col {
+    margin-top: 2rem;
+  }
+  .storage-details-panel {
+    width: 100%;
+    min-width: 100%;
+    position: relative;
+    top: 0;
+    height: auto;
+    margin-top: 1.5rem;
+  }
+}

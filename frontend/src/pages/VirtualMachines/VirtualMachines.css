@@ -1,0 +1,318 @@
+/* Virtual Machines Page Styles */
+
+.vm-container {
+  padding-bottom: 2rem;
+}
+
+.vm-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.vm-title {
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--text-color);
+  margin-bottom: 0.25rem;
+}
+
+.vm-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Custom Table Wrapper */
+.vm-table-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.table-responsive {
+  margin: 0;
+}
+
+.vm-table {
+  width: 100%;
+  margin-bottom: 0;
+  color: var(--text-color);
+  border-collapse: collapse;
+}
+
+.vm-table th {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 1rem;
+}
+
+.vm-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.vm-table tr:last-child td {
+  border-bottom: none;
+}
+
+.vm-table tr {
+  transition: background-color 0.15s ease;
+}
+
+.vm-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Status Badges */
+.vm-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.vm-status-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.status-running {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-stopped {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-starting {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--warning-color);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Row Action Buttons */
+.vm-row-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.btn-row-action {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+}
+
+.btn-row-action:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  border-color: var(--text-secondary);
+}
+
+.btn-row-action.btn-start:hover {
+  color: var(--success-color);
+  border-color: var(--success-color);
+  background-color: rgba(34, 197, 94, 0.05);
+}
+
+.btn-row-action.btn-stop:hover {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.btn-row-action.btn-restart:hover {
+  color: var(--warning-color);
+  border-color: var(--warning-color);
+  background-color: rgba(245, 158, 11, 0.05);
+}
+
+.btn-row-action.btn-details.active {
+  background-color: rgba(0, 120, 212, 0.1);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Slide-over details panel layout */
+.vm-main-layout {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+  align-items: flex-start;
+}
+
+.vm-list-section {
+  flex-grow: 1;
+  transition: all 0.3s ease;
+  min-width: 0;
+}
+
+.vm-details-panel {
+  width: 360px;
+  min-width: 360px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  height: calc(100vh - var(--navbar-height) - var(--footer-height) - 4rem);
+  position: sticky;
+  top: 2rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.panel-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+.panel-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.close-panel-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.close-panel-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+}
+
+/* Detail fields */
+.detail-group-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.25rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.detail-label {
+  color: var(--text-secondary);
+}
+
+.detail-value {
+  color: var(--text-color);
+  font-weight: 500;
+  text-align: right;
+}
+
+/* VM details progress bars */
+.vm-panel-progress {
+  margin-bottom: 1rem;
+}
+
+.vm-panel-progress:last-child {
+  margin-bottom: 0;
+}
+
+/* Mini progress bars inside panel */
+.progress-mini {
+  background-color: rgba(255, 255, 255, 0.05);
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* Small CPU, MEM labels */
+.progress-mini-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+  color: var(--text-secondary);
+}
+
+/* Tooltips & Helpers */
+.vm-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.os-icon {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* Responsive Table Adaptations */
+@media (max-width: 1200px) {
+  .vm-details-panel {
+    width: 320px;
+    min-width: 320px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .vm-main-layout {
+    flex-direction: column;
+  }
+  .vm-details-panel {
+    width: 100%;
+    min-width: 100%;
+    position: relative;
+    top: 0;
+    height: auto;
+    margin-top: 1.5rem;
+  }
+}
