@@ -455,6 +455,10 @@ const DockerContainers = () => {
                   <span className="docker-detail-value">{containerName}</span>
                 </div>
                 <div className="docker-detail-row">
+                  <span className="docker-detail-label">IP Address</span>
+                  <span className="docker-detail-value"><code>{selectedContainer?.ip_address || '-'}</code></span>
+                </div>
+                <div className="docker-detail-row">
                   <span className="docker-detail-label">Status</span>
                   <span className="docker-detail-value">
                     <span className={`container-status-badge ${getStatusClass(containerStatus)}`}>
@@ -470,8 +474,20 @@ const DockerContainers = () => {
                   </span>
                 </div>
                 <div className="docker-detail-row">
-                  <span className="docker-detail-label">Network</span>
+                  <span className="docker-detail-label">Network Mode</span>
+                  <span className="docker-detail-value">{selectedContainer?.network_mode || 'default'}</span>
+                </div>
+                <div className="docker-detail-row">
+                  <span className="docker-detail-label">Network Name</span>
                   <span className="docker-detail-value">{containerNetwork}</span>
+                </div>
+                <div className="docker-detail-row">
+                  <span className="docker-detail-label">Image Size</span>
+                  <span className="docker-detail-value">{selectedContainer?.image_size || 'N/A'}</span>
+                </div>
+                <div className="docker-detail-row">
+                  <span className="docker-detail-label">Restart Count</span>
+                  <span className="docker-detail-value"><span className="badge bg-secondary">{selectedContainer?.restart_count || 0}</span></span>
                 </div>
                 <div className="docker-detail-row">
                   <span className="docker-detail-label">Volumes</span>

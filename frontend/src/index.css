@@ -2,17 +2,18 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
 :root {
-  --bg-color: #0B1220;
-  --sidebar-bg: #111827;
-  --card-bg: #1A2332;
-  --border-color: #263445;
-  --primary-color: #0078D4;
-  --secondary-color: #22D3EE;
-  --success-color: #22C55E;
-  --warning-color: #F59E0B;
-  --danger-color: #EF4444;
-  --text-color: #FFFFFF;
-  --text-secondary: #94A3B8;
+  --bg-color: #07111F;
+  --sidebar-bg: #0B1728;
+  --card-bg: #122235;
+  --hover-color: #18304A;
+  --border-color: #2D4C68;
+  --primary-color: #00C8FF;
+  --secondary-color: #3DD598;
+  --success-color: #3DD598;
+  --warning-color: #FFB020;
+  --danger-color: #FF5D73;
+  --text-color: #F8FBFF;
+  --text-secondary: #90A7BF;
   
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --sidebar-width: 260px;

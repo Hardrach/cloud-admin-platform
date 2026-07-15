@@ -14,6 +14,8 @@ import IAM from './pages/IAM/IAM';
 import Terraform from './pages/Terraform/Terraform';
 import DockerCompose from './pages/DockerCompose/DockerCompose';
 import GitHub from './pages/GitHub/GitHub';
+import Settings from './pages/Settings/Settings';
+import Profile from './pages/Profile/Profile';
 import { FiCpu, FiPlayCircle, FiTerminal, FiGlobe, FiDatabase, FiActivity, FiLock, FiCode } from 'react-icons/fi';
 
 function App() {
@@ -74,6 +76,10 @@ function App() {
         <DockerCompose />
       ) : activeItem.id === 'github' ? (
         <GitHub />
+      ) : activeItem.id === 'settings' ? (
+        <Settings />
+      ) : activeItem.id === 'profile' ? (
+        <Profile />
       ) : (
         /* Welcome Placeholder for other pages */
         <div className="welcome-card">

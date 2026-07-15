@@ -246,6 +246,47 @@ const Metrics = () => {
         </div>
       </div>
 
+      {/* Extended Telemetry Metrics Row */}
+      <div className="row g-3 mb-4 mt-1">
+        <div className="col-md-4">
+          <div className="metric-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+            <div className="fw-semibold text-white mb-2 d-flex align-items-center gap-2">
+              <FiCpu className="text-primary" /> Load Average
+            </div>
+            <div className="fs-5 fw-bold text-white mt-2">
+              {metrics?.load_average ? `${metrics.load_average['1min']} (1m) | ${metrics.load_average['5min']} (5m) | ${metrics.load_average['15min']} (15m)` : '0.00 | 0.00 | 0.00'}
+            </div>
+            <div className="small text-muted mt-1">CPU process load queues</div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="metric-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+            <div className="fw-semibold text-white mb-2 d-flex align-items-center gap-2">
+              <FiActivity className="text-warning" /> Swap Memory
+            </div>
+            <div className="fs-5 fw-bold text-warning mt-2">
+              {metrics?.swap?.percent || 0}% Used
+            </div>
+            <div className="small text-muted mt-1">
+              Swap: {metrics?.swap?.used_gb || 0} GB used of {metrics?.swap?.total_gb || 0} GB ({metrics?.swap?.free_gb || 0} GB free)
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="metric-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+            <div className="fw-semibold text-white mb-2 d-flex align-items-center gap-2">
+              <FiHardDrive className="text-success" /> Disk I/O Counters
+            </div>
+            <div className="small text-white mt-2">
+              <strong>Reads:</strong> {metrics?.disk_io?.read_count || 0} ({metrics?.disk_io?.read_mb || 0} MB)
+            </div>
+            <div className="small text-white mt-1">
+              <strong>Writes:</strong> {metrics?.disk_io?.write_count || 0} ({metrics?.disk_io?.write_mb || 0} MB)
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="row g-4">
         {/* Network LineChart */}
         <div className="col-md-8">

@@ -74,7 +74,11 @@ const Dashboard = () => {
 
   // Extra config values
   const subscription = data?.subscription || 'Enterprise (Pay-As-You-Go)';
-  const terraformVersion = data?.terraform || data?.terraform_version || 'v1.5.7';
+  const terraformVersion = data?.terraform_version || 'Not installed';
+  const hostname = data?.system?.hostname || 'N/A';
+  const kernel = data?.system?.kernel || 'N/A';
+  const uptime = data?.system?.uptime || 'N/A';
+  const gitBranch = data?.git_branch || 'N/A';
 
   // Stats Card data structures mapping the API
   const stats = [
@@ -282,6 +286,18 @@ const Dashboard = () => {
                 </h2>
                 <div className="info-card-grid">
                   <div className="info-card">
+                    <span className="info-label">Hostname</span>
+                    <span className="info-value">{hostname}</span>
+                  </div>
+                  <div className="info-card">
+                    <span className="info-label">Uptime</span>
+                    <span className="info-value">{uptime}</span>
+                  </div>
+                  <div className="info-card">
+                    <span className="info-label">Kernel</span>
+                    <span className="info-value">{kernel}</span>
+                  </div>
+                  <div className="info-card">
                     <span className="info-label">Region</span>
                     <span className="info-value">{azureRegion}</span>
                   </div>
@@ -304,6 +320,10 @@ const Dashboard = () => {
                   <div className="info-card">
                     <span className="info-label">PostgreSQL Version</span>
                     <span className="info-value">{postgresVersion}</span>
+                  </div>
+                  <div className="info-card">
+                    <span className="info-label">Git Branch</span>
+                    <span className="info-value">{gitBranch}</span>
                   </div>
                 </div>
               </div>

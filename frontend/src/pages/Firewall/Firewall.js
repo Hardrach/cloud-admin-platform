@@ -131,8 +131,8 @@ const Firewall = () => {
 
       {/* Stats row cards */}
       <div className="row g-3 mb-4">
-        <div className="col-md-3">
-          <div className="firewall-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+        <div className="col-md-4">
+          <div className="firewall-stat-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
               <span className="text-secondary small font-medium">Firewall Status</span>
               <FiShield className="text-primary" size={20} />
@@ -143,36 +143,33 @@ const Firewall = () => {
                 {loading ? 'LOADING...' : firewallData.status?.toUpperCase()}
               </span>
             </div>
+            <div className="small text-muted mt-2">Default Policy: <code className="text-light">{firewallData.default_policy || 'N/A'}</code></div>
           </div>
         </div>
-        <div className="col-md-3">
-          <div className="firewall-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+        <div className="col-md-4">
+          <div className="firewall-stat-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Rules Count</span>
+              <span className="text-secondary small font-medium">Rules Overview</span>
               <FiLock className="text-info" size={20} />
             </div>
-            <div className="fs-4 fw-bold text-white">{loading ? '...' : totalRules}</div>
-            <div className="small text-muted mt-1">Total defined policies</div>
+            <div className="fs-4 fw-bold text-white">{loading ? '...' : totalRules} Rules</div>
+            <div className="small text-muted mt-1">
+              IPv4: <span className="text-light">{firewallData.ipv4_rules || 0}</span> | IPv6: <span className="text-light">{firewallData.ipv6_rules || 0}</span>
+            </div>
           </div>
         </div>
-        <div className="col-md-3">
-          <div className="firewall-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+        <div className="col-md-4">
+          <div className="firewall-stat-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Allowed Rules</span>
+              <span className="text-secondary small font-medium">Traffic Actions</span>
               <FiCheckCircle className="text-success" size={20} />
             </div>
-            <div className="fs-4 fw-bold text-success">{loading ? '...' : allowedRulesCount}</div>
-            <div className="small text-muted mt-1">Allowed inbound corridors</div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="firewall-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Blocked Rules</span>
-              <FiAlertTriangle className="text-danger" size={20} />
+            <div className="fs-6 text-white mt-1">
+              <span className="text-success fw-bold">✓ Allowed:</span> {loading ? '...' : (firewallData.allowed_ports?.join(', ') || 'None')}
             </div>
-            <div className="fs-4 fw-bold text-danger">{loading ? '...' : blockedRulesCount}</div>
-            <div className="small text-muted mt-1">Dropped traffic scopes</div>
+            <div className="fs-6 text-white mt-1">
+              <span className="text-danger fw-bold">✗ Blocked:</span> {loading ? '...' : (firewallData.blocked_ports?.join(', ') || 'None')}
+            </div>
           </div>
         </div>
       </div>

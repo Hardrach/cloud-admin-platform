@@ -121,4 +121,39 @@ export const getGitHub = async () => {
   return response.data;
 };
 
+export const fetchGit = async () => {
+  const response = await api.post("/api/github/fetch");
+  return response.data;
+};
+
+export const pullGit = async () => {
+  const response = await api.post("/api/github/pull");
+  return response.data;
+};
+
+export const pushGit = async () => {
+  const response = await api.post("/api/github/push");
+  return response.data;
+};
+
+export const commitGit = async (message) => {
+  const response = await api.post("/api/github/commit", { message });
+  return response.data;
+};
+
+export const runTerraformPlan = async () => {
+  const response = await api.post("/api/terraform/plan");
+  return response.data;
+};
+
+export const runTerraformApply = async () => {
+  const response = await api.post("/api/terraform/apply");
+  return response.data;
+};
+
+export const runTerraformDestroy = async () => {
+  const response = await api.post("/api/terraform/destroy");
+  return response.data;
+};
+
 export default api;
