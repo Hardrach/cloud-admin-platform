@@ -133,13 +133,14 @@ const Dashboard = () => {
         </button>
       </div>
 
+
       {/* Backend Alert (if API error occurs) */}
       {error && (
         <div className="alert alert-danger border-0 mb-4 d-flex align-items-center gap-3 text-white" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)' }} role="alert">
           <FiAlertTriangle className="text-danger flex-shrink-0" size={24} />
           <div>
             <strong className="d-block text-danger mb-1">Backend API Connection Failure</strong>
-            <span>Unable to reach endpoint at http://20.215.68.150:8000/api/dashboard. Please ensure backend services are up. ({error})</span>
+            <span>Unable to reach backend API endpoint. Please ensure the backend services are running. ({error})</span>
           </div>
         </div>
       )}

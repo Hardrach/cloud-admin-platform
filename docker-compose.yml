@@ -1,0 +1,35 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: postgres-db
+    restart: always
+
+    environment:
+      POSTGRES_DB: cloudadmin
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: backend-api
+    restart: always
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/workspace
+
+volumes:
+  postgres_data:

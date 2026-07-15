@@ -1,12 +1,15 @@
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const api = axios.create({
-  baseURL: 'http://20.215.68.150:8000',
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   }
 });
+
 
 export const getDashboard = async () => {
   const response = await api.get('/api/dashboard');
