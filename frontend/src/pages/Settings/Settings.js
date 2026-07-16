@@ -8,7 +8,7 @@ import {
   Globe
 } from 'lucide-react';
 
-const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
+const Settings = ({ isLightTheme, themePreference, setThemePreference }) => {
   const [settings, setSettings] = useState({
     platformName: 'Cloud Admin Platform',
     organization: 'Enterprise Corp.',
@@ -17,6 +17,7 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
     refreshInterval: '30 seconds',
     darkMode: !isLightTheme,
     lightMode: isLightTheme,
+    autoMode: themePreference === 'auto',
     accentColor: '#00D4FF',
   });
 
@@ -24,17 +25,10 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
     setSettings(prev => ({
       ...prev,
       darkMode: !isLightTheme,
-      lightMode: isLightTheme
+      lightMode: isLightTheme,
+      autoMode: themePreference === 'auto'
     }));
-  }, [isLightTheme]);
-
-  const handleThemeChange = (mode) => {
-    if (mode === 'light' && !isLightTheme) {
-      toggleGlobalTheme();
-    } else if (mode === 'dark' && isLightTheme) {
-      toggleGlobalTheme();
-    }
-  };
+  }, [isLightTheme, themePreference]);
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -97,10 +91,18 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
             </div>
             <div className="settings-section-body">
               <div className="settings-row">
+                <span className="settings-row-label">Automatic Theme</span>
+                <button
+                  className={`toggle-switch-custom ${settings.autoMode ? 'active' : ''}`}
+                  onClick={() => setThemePreference(settings.autoMode ? (isLightTheme ? 'light' : 'dark') : 'auto')}
+                  aria-label="Toggle automatic theme mode"
+                />
+              </div>
+              <div className="settings-row">
                 <span className="settings-row-label">Dark Theme Active</span>
                 <button
                   className={`toggle-switch-custom ${settings.darkMode ? 'active' : ''}`}
-                  onClick={() => handleThemeChange(settings.darkMode ? 'light' : 'dark')}
+                  onClick={() => setThemePreference('dark')}
                   aria-label="Toggle dark mode"
                 />
               </div>
@@ -108,7 +110,7 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
                 <span className="settings-row-label">Light Theme Active</span>
                 <button
                   className={`toggle-switch-custom ${settings.lightMode ? 'active' : ''}`}
-                  onClick={() => handleThemeChange(settings.lightMode ? 'dark' : 'light')}
+                  onClick={() => setThemePreference('light')}
                   aria-label="Toggle light mode"
                 />
               </div>

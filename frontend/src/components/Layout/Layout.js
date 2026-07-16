@@ -6,7 +6,7 @@ import ToastProvider from '../Toast/Toast';
 import ConfirmDialogProvider from '../ConfirmDialog/ConfirmDialog';
 import PageTransition from '../PageTransition/PageTransition';
 
-const Layout = ({ children, activeItem, setActiveItem, isLightTheme, toggleGlobalTheme }) => {
+const Layout = ({ children, activeItem, setActiveItem, isLightTheme, themePreference, setThemePreference, toggleGlobalTheme }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -39,6 +39,8 @@ const Layout = ({ children, activeItem, setActiveItem, isLightTheme, toggleGloba
               isMobileOpen={isMobileOpen}
               setIsMobileOpen={setIsMobileOpen}
               isLightTheme={isLightTheme}
+              themePreference={themePreference}
+              setThemePreference={setThemePreference}
               toggleGlobalTheme={toggleGlobalTheme}
             />
             

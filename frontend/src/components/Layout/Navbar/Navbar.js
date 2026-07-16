@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, Menu, ChevronRight, Grid, Sun, Moon } from 'lucide-react';
+import { Search, Bell, Menu, ChevronRight, Grid, Sun, Moon, Monitor } from 'lucide-react';
 
-const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggleGlobalTheme }) => {
+const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, themePreference, setThemePreference, toggleGlobalTheme }) => {
   const [searchVal, setSearchVal] = useState('');
   const searchInputRef = useRef(null);
 
@@ -74,13 +74,24 @@ const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggl
       {/* Actions, indicators, avatar */}
       <div className="navbar-right">
         {/* Theme toggle control */}
-        <button 
+        <button
           className="nav-action-btn d-none d-sm-flex align-items-center gap-1 theme-toggle-btn"
-          onClick={toggleGlobalTheme}
+          onClick={() => {
+            if (themePreference === 'auto') {
+              setThemePreference(isLightTheme ? 'dark' : 'light');
+            } else {
+              toggleGlobalTheme();
+            }
+          }}
           style={{ border: '1px solid var(--border-default)', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}
-          title={isLightTheme ? "Switch to Dark Mode" : "Switch to Light Mode"}
+          title={themePreference === 'auto' ? 'Auto mode active' : isLightTheme ? "Switch to Dark Mode" : "Switch to Light Mode"}
         >
-          {isLightTheme ? (
+          {themePreference === 'auto' ? (
+            <>
+              <Monitor size={14} className="text-primary" />
+              <span className="small text-secondary" style={{ fontSize: '11px', fontWeight: 600 }}>AUTO</span>
+            </>
+          ) : isLightTheme ? (
             <>
               <Sun size={14} className="text-warning" />
               <span className="small text-secondary" style={{ fontSize: '11px', fontWeight: 600 }}>LIGHT</span>

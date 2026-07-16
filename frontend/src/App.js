@@ -17,7 +17,17 @@ import GitHub from './pages/GitHub/GitHub';
 import Settings from './pages/Settings/Settings';
 import Profile from './pages/Profile/Profile';
 import LoadingScreen from './components/LoadingScreen/LoadingScreen';
-import { Cpu, Server, Terminal, Globe, Database, Activity, Lock, Code } from 'lucide-react';
+import { Cpu, Server, Terminal, Globe, Database, Activity, Lock, Code, Moon, Sun, Monitor } from 'lucide-react';
+
+const THEME_STORAGE_KEY = 'cloud-admin-theme-preference';
+const THEME_ONBOARDING_KEY = 'cloud-admin-theme-onboarding-seen';
+
+const getAutoTheme = () => {
+  const hour = new Date().getHours();
+  const isNight = hour >= 19 || hour < 7;
+  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  return isNight || prefersDark ? 'dark' : 'light';
+};
 
 function App() {
   const [activeItem, setActiveItem] = useState({
@@ -26,7 +36,9 @@ function App() {
     name: 'Dashboard'
   });
 
-  const [isLightTheme, setIsLightTheme] = useState(document.body.classList.contains('light-theme'));
+  const [themePreference, setThemePreference] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'auto');
+  const [isLightTheme, setIsLightTheme] = useState(false);
+  const [showThemePrompt, setShowThemePrompt] = useState(() => localStorage.getItem(THEME_ONBOARDING_KEY) !== 'true');
   const [appInitializing, setAppInitializing] = useState(true);
 
   // Initial load branded screen simulation
@@ -37,14 +49,40 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  const applyTheme = (mode) => {
+    const resolvedMode = mode === 'auto' ? getAutoTheme() : mode;
+    const nextIsLight = resolvedMode === 'light';
+    document.body.classList.toggle('light-theme', nextIsLight);
+    document.body.dataset.themePreference = mode;
+    setIsLightTheme(nextIsLight);
+  };
+
+  useEffect(() => {
+    localStorage.setItem(THEME_STORAGE_KEY, themePreference);
+    applyTheme(themePreference);
+
+    if (themePreference !== 'auto') return undefined;
+
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const handleAutoChange = () => applyTheme('auto');
+    media?.addEventListener?.('change', handleAutoChange);
+    const interval = window.setInterval(handleAutoChange, 15 * 60 * 1000);
+
+    return () => {
+      media?.removeEventListener?.('change', handleAutoChange);
+      window.clearInterval(interval);
+    };
+  }, [themePreference]);
+
+  const chooseThemePreference = (mode) => {
+    setThemePreference(mode);
+    localStorage.setItem(THEME_ONBOARDING_KEY, 'true');
+    setShowThemePrompt(false);
+  };
+
   const toggleGlobalTheme = () => {
-    if (document.body.classList.contains('light-theme')) {
-      document.body.classList.remove('light-theme');
-      setIsLightTheme(false);
-    } else {
-      document.body.classList.add('light-theme');
-      setIsLightTheme(true);
-    }
+    setThemePreference(isLightTheme ? 'dark' : 'light');
+    localStorage.setItem(THEME_ONBOARDING_KEY, 'true');
   };
 
   const getActiveIcon = () => {
@@ -72,7 +110,40 @@ function App() {
   }
 
   return (
-    <Layout activeItem={activeItem} setActiveItem={setActiveItem} isLightTheme={isLightTheme} toggleGlobalTheme={toggleGlobalTheme}>
+    <Layout
+      activeItem={activeItem}
+      setActiveItem={setActiveItem}
+      isLightTheme={isLightTheme}
+      themePreference={themePreference}
+      setThemePreference={chooseThemePreference}
+      toggleGlobalTheme={toggleGlobalTheme}
+    >
+      {showThemePrompt && (
+        <div className="theme-prompt-backdrop">
+          <div className="theme-prompt-card">
+            <div>
+              <h2 className="theme-prompt-title">Choose your display mode</h2>
+              <p className="theme-prompt-copy">
+                Pick a theme for this browser. Auto follows your device and switches to dark at night.
+              </p>
+            </div>
+            <div className="theme-prompt-actions">
+              <button className="theme-choice-btn" onClick={() => chooseThemePreference('auto')}>
+                <Monitor size={18} />
+                Auto
+              </button>
+              <button className="theme-choice-btn" onClick={() => chooseThemePreference('light')}>
+                <Sun size={18} />
+                Light
+              </button>
+              <button className="theme-choice-btn" onClick={() => chooseThemePreference('dark')}>
+                <Moon size={18} />
+                Dark
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {activeItem.id === 'dashboard' ? (
         <Dashboard />
       ) : activeItem.id === 'vm' ? (
@@ -102,7 +173,12 @@ function App() {
       ) : activeItem.id === 'github' ? (
         <GitHub />
       ) : activeItem.id === 'settings' ? (
-        <Settings isLightTheme={isLightTheme} toggleGlobalTheme={toggleGlobalTheme} />
+        <Settings
+          isLightTheme={isLightTheme}
+          themePreference={themePreference}
+          setThemePreference={chooseThemePreference}
+          toggleGlobalTheme={toggleGlobalTheme}
+        />
       ) : activeItem.id === 'profile' ? (
         <Profile />
       ) : (

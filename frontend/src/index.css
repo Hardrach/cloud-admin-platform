@@ -251,6 +251,23 @@ body::before {
   50% { box-shadow: 0 14px 42px rgba(32, 227, 178, 0.12); }
 }
 
+@keyframes lightAurora {
+  0% { background-position: 0% 50%, 100% 50%, 0 0; }
+  50% { background-position: 70% 20%, 30% 80%, 48px 0; }
+  100% { background-position: 100% 50%, 0% 50%, 96px 0; }
+}
+
+@keyframes borderTrace {
+  0% { opacity: 0; transform: translateX(-100%); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes promptPop {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
 /* Prefers reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -604,6 +621,32 @@ body::before {
   transform: translateY(-1px);
 }
 
+.theme-toggle-btn {
+  overflow: hidden;
+}
+
+.theme-toggle-btn::after,
+.card-base::after,
+.card-base-static::after,
+.dashboard-panel::after,
+.stat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 0 35%, rgba(255, 255, 255, 0.12) 48%, transparent 62%);
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.theme-toggle-btn:hover::after,
+.card-base:hover::after,
+.card-base-static:hover::after,
+.dashboard-panel:hover::after,
+.stat-card:hover::after {
+  animation: borderTrace 1.15s ease;
+}
+
 .badge-dot {
   position: absolute;
   top: 4px;
@@ -669,6 +712,8 @@ body::before {
   padding: var(--space-6);
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+  position: relative;
+  overflow: hidden;
 }
 
 .card-base:hover {
@@ -702,6 +747,8 @@ body::before {
   border-radius: var(--radius-lg);
   padding: var(--space-6);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
 }
 
 /* Page Header — replaces 16 per-page header patterns */
@@ -898,6 +945,8 @@ body.light-theme {
     radial-gradient(circle at 14% 8%, rgba(32, 227, 178, 0.18), transparent 30rem),
     radial-gradient(circle at 82% 4%, rgba(125, 211, 252, 0.2), transparent 28rem),
     linear-gradient(135deg, #F8FCFB, #F4F8FF 52%, #FFFFFF);
+  background-size: 140% 140%, 150% 150%, auto;
+  animation: lightAurora 22s ease-in-out infinite alternate;
 }
 
 body.light-theme::before {
@@ -919,6 +968,78 @@ body.light-theme .dashboard-panel,
 body.light-theme .stat-card,
 body.light-theme .log-viewer-panel {
   background-color: rgba(255, 255, 255, 0.88);
+}
+
+.theme-prompt-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 86px;
+  pointer-events: none;
+}
+
+.theme-prompt-card {
+  pointer-events: auto;
+  width: min(520px, calc(100vw - 32px));
+  background-color: rgba(16, 20, 27, 0.94);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-5);
+  animation: promptPop 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
+  backdrop-filter: blur(18px);
+}
+
+body.light-theme .theme-prompt-card {
+  background-color: rgba(255, 255, 255, 0.94);
+}
+
+.theme-prompt-title {
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.theme-prompt-copy {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+.theme-prompt-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.theme-choice-btn {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  padding: var(--space-3);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.theme-choice-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  background-color: var(--bg-overlay);
+}
+
+@media (max-width: 479.98px) {
+  .theme-prompt-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Light theme text color overrides for Bootstrap classes */
