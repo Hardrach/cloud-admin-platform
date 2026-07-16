@@ -280,7 +280,7 @@ const GitHub = () => {
 
       <div className="row g-4 mb-4">
         {/* Repository details */}
-        <div className="col-lg-6">
+        <div className="col-lg-12">
           <div className="github-table-card p-4 h-100">
             <h5 className="text-white mb-4 d-flex align-items-center gap-2">
               <FiGithub className="text-primary" /> Repository Dashboard
@@ -334,44 +334,6 @@ const GitHub = () => {
                 </span>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Git Action / Local Commit Form */}
-        <div className="col-lg-6">
-          <div className="github-table-card p-4 h-100">
-            <h5 className="text-white mb-4 d-flex align-items-center gap-2">
-              <FiCommand className="text-warning" /> Local Working Tree Commit
-            </h5>
-            
-            {gitData.status === 'Clean' ? (
-              <div className="d-flex flex-column align-items-center justify-content-center h-75 text-center text-secondary">
-                <FiCheckCircle size={40} className="text-success mb-2" />
-                <p className="fw-medium mb-0">Working tree clean. No changes to commit.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleCommitSubmit} className="d-flex flex-column justify-content-between h-75">
-                <div className="mb-3">
-                  <label className="form-label text-secondary small">Commit Message</label>
-                  <textarea 
-                    className="form-control text-white" 
-                    rows="3" 
-                    placeholder="Enter commit message (e.g. Fix docker compose volume bindings)..."
-                    style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderColor: 'var(--border-color)', color: '#fff' }}
-                    value={commitMessage}
-                    onChange={(e) => setCommitMessage(e.target.value)}
-                    required
-                  />
-                </div>
-                <button 
-                  type="submit" 
-                  className="btn btn-warning w-100 d-flex align-items-center justify-content-center gap-2"
-                  disabled={actionLoading || !commitMessage.trim()}
-                >
-                  <FiPlay /> Stage and Commit All Changes
-                </button>
-              </form>
-            )}
           </div>
         </div>
       </div>

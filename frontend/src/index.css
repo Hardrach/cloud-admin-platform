@@ -512,3 +512,54 @@ body {
     display: none;
   }
 }
+
+/* Light Theme Variables Override */
+body.light-theme {
+  --bg-color: #f5f7fa;
+  --sidebar-bg: #ffffff;
+  --card-bg: #ffffff;
+  --hover-color: #edf2f7;
+  --border-color: #e2e8f0;
+  --text-color: #1a202c;
+  --text-secondary: #4a5568;
+}
+
+body.light-theme .settings-section,
+body.light-theme .github-table-card,
+body.light-theme .chart-card,
+body.light-theme .metric-card,
+body.light-theme .firewall-stat-card,
+body.light-theme .timeline-item,
+body.light-theme .health-item-card,
+body.light-theme .dashboard-panel,
+body.light-theme .docker-panel-body,
+body.light-theme .docker-table-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme input,
+body.light-theme textarea,
+body.light-theme select {
+  background-color: #f7fafc !important;
+  color: #1a202c !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.light-theme .text-white {
+  color: #1a202c !important;
+}
+
+body.light-theme .text-light {
+  color: #2d3748 !important;
+}
+
+body.light-theme table th {
+  color: #4a5568 !important;
+  background-color: #f7fafc !important;
+}
+
+body.light-theme pre,
+body.light-theme code {
+  background-color: #edf2f7 !important;
+  color: #2d3748 !important;
+}

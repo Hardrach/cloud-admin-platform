@@ -11,26 +11,26 @@ import {
 } from 'react-icons/fi';
 
 const Settings = () => {
-  // Simulated settings state
+  const isLight = document.body.classList.contains('light-theme');
   const [settings, setSettings] = useState({
     platformName: 'Cloud Admin Platform',
     organization: 'Enterprise Corp.',
     timezone: 'Europe/Paris (UTC+1)',
     language: 'English',
     refreshInterval: '30 seconds',
-    darkMode: true,
-    lightMode: false,
+    darkMode: !isLight,
+    lightMode: isLight,
     accentColor: '#00C8FF',
-    emailAlerts: true,
-    desktopNotifications: false,
-    sound: true,
-    sessionTimeout: '30 minutes',
-    autoLogout: true,
-    mfaEnabled: false,
   });
 
-  const toggleSetting = (key) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleTheme = (mode) => {
+    if (mode === 'light') {
+      setSettings(prev => ({ ...prev, darkMode: false, lightMode: true }));
+      document.body.classList.add('light-theme');
+    } else {
+      setSettings(prev => ({ ...prev, darkMode: true, lightMode: false }));
+      document.body.classList.remove('light-theme');
+    }
   };
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -97,7 +97,7 @@ const Settings = () => {
                 <span className="settings-row-label">Dark Mode</span>
                 <button
                   className={`toggle-switch ${settings.darkMode ? 'active' : ''}`}
-                  onClick={() => toggleSetting('darkMode')}
+                  onClick={() => toggleTheme('dark')}
                   aria-label="Toggle dark mode"
                 />
               </div>
@@ -105,7 +105,7 @@ const Settings = () => {
                 <span className="settings-row-label">Light Mode</span>
                 <button
                   className={`toggle-switch ${settings.lightMode ? 'active' : ''}`}
-                  onClick={() => toggleSetting('lightMode')}
+                  onClick={() => toggleTheme('light')}
                   aria-label="Toggle light mode"
                 />
               </div>
@@ -120,83 +120,6 @@ const Settings = () => {
                     border: '1px solid var(--border-color)'
                   }} />
                   <code style={{ color: 'var(--primary-color)', fontSize: '0.8rem' }}>{settings.accentColor}</code>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Notifications ── */}
-          <div className="settings-section">
-            <div className="settings-section-header">
-              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(255, 176, 32, 0.1)', color: 'var(--warning-color)' }}>
-                <FiBell />
-              </div>
-              <div>
-                <h3 className="settings-section-title">Notifications</h3>
-                <p className="settings-section-desc">Alert channels and delivery preferences</p>
-              </div>
-            </div>
-            <div className="settings-section-body">
-              <div className="settings-row">
-                <span className="settings-row-label">Email Alerts</span>
-                <button
-                  className={`toggle-switch ${settings.emailAlerts ? 'active' : ''}`}
-                  onClick={() => toggleSetting('emailAlerts')}
-                  aria-label="Toggle email alerts"
-                />
-              </div>
-              <div className="settings-row">
-                <span className="settings-row-label">Desktop Notifications</span>
-                <button
-                  className={`toggle-switch ${settings.desktopNotifications ? 'active' : ''}`}
-                  onClick={() => toggleSetting('desktopNotifications')}
-                  aria-label="Toggle desktop notifications"
-                />
-              </div>
-              <div className="settings-row">
-                <span className="settings-row-label">Sound</span>
-                <button
-                  className={`toggle-switch ${settings.sound ? 'active' : ''}`}
-                  onClick={() => toggleSetting('sound')}
-                  aria-label="Toggle sound"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Security ── */}
-          <div className="settings-section">
-            <div className="settings-section-header">
-              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(255, 93, 115, 0.1)', color: 'var(--danger-color)' }}>
-                <FiShield />
-              </div>
-              <div>
-                <h3 className="settings-section-title">Security</h3>
-                <p className="settings-section-desc">Session management and authentication policies</p>
-              </div>
-            </div>
-            <div className="settings-section-body">
-              <div className="settings-row">
-                <span className="settings-row-label">Session Timeout</span>
-                <span className="settings-row-value">{settings.sessionTimeout}</span>
-              </div>
-              <div className="settings-row">
-                <span className="settings-row-label">Auto Logout on Idle</span>
-                <button
-                  className={`toggle-switch ${settings.autoLogout ? 'active' : ''}`}
-                  onClick={() => toggleSetting('autoLogout')}
-                  aria-label="Toggle auto logout"
-                />
-              </div>
-              <div className="settings-row">
-                <span className="settings-row-label">Multi-Factor Authentication</span>
-                <div className="d-flex align-items-center gap-2">
-                  <button
-                    className={`toggle-switch ${settings.mfaEnabled ? 'active' : ''}`}
-                    onClick={() => toggleSetting('mfaEnabled')}
-                    aria-label="Toggle MFA"
-                  />
-                  <span className="text-secondary" style={{ fontSize: '0.75rem' }}>Coming Soon</span>
                 </div>
               </div>
             </div>
