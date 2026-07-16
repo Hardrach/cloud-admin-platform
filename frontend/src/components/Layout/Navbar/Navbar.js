@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, Menu, ChevronRight, Grid, Sun, Moon, Monitor } from 'lucide-react';
+import { Search, Bell, Menu, ChevronRight, Grid, Sun, Moon, Monitor, Cpu } from 'lucide-react';
 
 const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, themePreference, setThemePreference, toggleGlobalTheme }) => {
   const [searchVal, setSearchVal] = useState('');
@@ -29,9 +29,10 @@ const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, theme
           <Menu size={20} />
         </button>
 
-        {/* Title visible on desktop */}
-        <a href="/" className="navbar-brand-mobile d-none d-sm-block text-decoration-none">
-          Cloud Admin Platform
+        {/* Compact brand visible on desktop */}
+        <a href="/" className="navbar-brand-mobile navbar-brand-compact d-none d-sm-flex text-decoration-none">
+          <Cpu size={19} className="navbar-brand-icon" />
+          <span>CloudAdmin</span>
         </a>
 
         {/* Breadcrumb section */}
