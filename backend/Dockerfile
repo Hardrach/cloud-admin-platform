@@ -33,6 +33,9 @@ RUN curl -SL https://github.com/docker/compose/releases/download/v2.39.1/docker-
 
 RUN chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
+# Configure Git to trust /workspace bind mounts in Docker container context
+RUN git config --global --add safe.directory /workspace
+
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt

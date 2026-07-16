@@ -180,7 +180,10 @@ def safe_check_output(args: list, default: str = "") -> str:
         logger.debug(f"Command binary '{binary}' not found on system path.")
         return default
     try:
-        return subprocess.check_output(args, text=True, stderr=subprocess.DEVNULL).strip()
+        return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT).strip()
+    except subprocess.CalledProcessError as e:
+        logger.error(f"[Command Error] {' '.join(args)}: {e.output}")
+        return default
     except Exception as e:
         logger.error(f"Execution of command {args} failed: {e}")
         return default
