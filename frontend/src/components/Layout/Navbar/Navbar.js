@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiSearch, FiBell, FiMenu, FiChevronRight, FiGrid } from 'react-icons/fi';
 
-const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen }) => {
+const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggleGlobalTheme }) => {
   return (
     <nav className="top-navbar">
       <div className="navbar-left">
@@ -55,9 +55,13 @@ const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen }) => {
 
       {/* Actions, indicators, avatar */}
       <div className="navbar-right">
-        {/* Theme badge placeholder */}
-        <span className="theme-badge d-none d-sm-inline-block">
-          DARK MODE
+        {/* Theme badge toggle button */}
+        <span 
+          className="theme-badge d-none d-sm-inline-block" 
+          onClick={toggleGlobalTheme}
+          style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+        >
+          {isLightTheme ? '☀️ LIGHT MODE' : '🌙 DARK MODE'}
         </span>
 
         {/* Notifications */}

@@ -3,7 +3,7 @@ import Sidebar from './Sidebar/Sidebar';
 import Navbar from './Navbar/Navbar';
 import Footer from './Footer/Footer';
 
-const Layout = ({ children, activeItem, setActiveItem }) => {
+const Layout = ({ children, activeItem, setActiveItem, isLightTheme, toggleGlobalTheme }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -33,6 +33,8 @@ const Layout = ({ children, activeItem, setActiveItem }) => {
           activeItem={activeItem}
           isMobileOpen={isMobileOpen}
           setIsMobileOpen={setIsMobileOpen}
+          isLightTheme={isLightTheme}
+          toggleGlobalTheme={toggleGlobalTheme}
         />
         
         <main className="content-container">

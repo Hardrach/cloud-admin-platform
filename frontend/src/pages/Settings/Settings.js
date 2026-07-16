@@ -10,26 +10,31 @@ import {
   FiGlobe
 } from 'react-icons/fi';
 
-const Settings = () => {
-  const isLight = document.body.classList.contains('light-theme');
+const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
   const [settings, setSettings] = useState({
     platformName: 'Cloud Admin Platform',
     organization: 'Enterprise Corp.',
     timezone: 'Europe/Paris (UTC+1)',
     language: 'English',
     refreshInterval: '30 seconds',
-    darkMode: !isLight,
-    lightMode: isLight,
+    darkMode: !isLightTheme,
+    lightMode: isLightTheme,
     accentColor: '#00C8FF',
   });
 
-  const toggleTheme = (mode) => {
-    if (mode === 'light') {
-      setSettings(prev => ({ ...prev, darkMode: false, lightMode: true }));
-      document.body.classList.add('light-theme');
-    } else {
-      setSettings(prev => ({ ...prev, darkMode: true, lightMode: false }));
-      document.body.classList.remove('light-theme');
+  React.useEffect(() => {
+    setSettings(prev => ({
+      ...prev,
+      darkMode: !isLightTheme,
+      lightMode: isLightTheme
+    }));
+  }, [isLightTheme]);
+
+  const handleThemeChange = (mode) => {
+    if (mode === 'light' && !isLightTheme) {
+      toggleGlobalTheme();
+    } else if (mode === 'dark' && isLightTheme) {
+      toggleGlobalTheme();
     }
   };
 
@@ -97,7 +102,7 @@ const Settings = () => {
                 <span className="settings-row-label">Dark Mode</span>
                 <button
                   className={`toggle-switch ${settings.darkMode ? 'active' : ''}`}
-                  onClick={() => toggleTheme('dark')}
+                  onClick={() => handleThemeChange('dark')}
                   aria-label="Toggle dark mode"
                 />
               </div>
@@ -105,7 +110,7 @@ const Settings = () => {
                 <span className="settings-row-label">Light Mode</span>
                 <button
                   className={`toggle-switch ${settings.lightMode ? 'active' : ''}`}
-                  onClick={() => toggleTheme('light')}
+                  onClick={() => handleThemeChange('light')}
                   aria-label="Toggle light mode"
                 />
               </div>

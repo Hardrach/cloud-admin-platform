@@ -25,6 +25,18 @@ function App() {
     name: 'Dashboard'
   });
 
+  const [isLightTheme, setIsLightTheme] = useState(document.body.classList.contains('light-theme'));
+
+  const toggleGlobalTheme = () => {
+    if (document.body.classList.contains('light-theme')) {
+      document.body.classList.remove('light-theme');
+      setIsLightTheme(false);
+    } else {
+      document.body.classList.add('light-theme');
+      setIsLightTheme(true);
+    }
+  };
+
   // Simple icon selector based on active item to make the placeholder look neat
   const getActiveIcon = () => {
     switch (activeItem.id) {
@@ -47,7 +59,7 @@ function App() {
   };
 
   return (
-    <Layout activeItem={activeItem} setActiveItem={setActiveItem}>
+    <Layout activeItem={activeItem} setActiveItem={setActiveItem} isLightTheme={isLightTheme} toggleGlobalTheme={toggleGlobalTheme}>
       {activeItem.id === 'dashboard' ? (
         <Dashboard />
       ) : activeItem.id === 'vm' ? (
@@ -77,7 +89,7 @@ function App() {
       ) : activeItem.id === 'github' ? (
         <GitHub />
       ) : activeItem.id === 'settings' ? (
-        <Settings />
+        <Settings isLightTheme={isLightTheme} toggleGlobalTheme={toggleGlobalTheme} />
       ) : activeItem.id === 'profile' ? (
         <Profile />
       ) : (
