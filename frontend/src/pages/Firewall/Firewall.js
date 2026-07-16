@@ -1,242 +1,171 @@
 import React, { useState, useEffect } from 'react';
 import './Firewall.css';
 import { getFirewall } from '../../services/api';
+import { useToast } from '../../components/Toast/Toast';
+import { DataTable } from '../../components/DataTable/DataTable';
+import { SkeletonCard } from '../../components/Skeleton/Skeleton';
 import { 
-  FiShield, 
-  FiLock, 
-  FiRefreshCw, 
-  FiAlertTriangle,
-  FiCheckCircle,
-  FiSearch
-} from 'react-icons/fi';
+  Shield, 
+  Lock, 
+  RefreshCw,
+  Sliders
+} from 'lucide-react';
 
 const Firewall = () => {
-  const [firewallData, setFirewallData] = useState({ status: 'unknown', rules: [], count: 0 });
+  const [rules, setRules] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const toast = useToast();
 
-  const fetchFirewallData = async () => {
+  const fetchFirewall = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await getFirewall();
-      setFirewallData(data || { status: 'unknown', rules: [], count: 0 });
+      const normalizedRules = (data?.rules || []).map((rule) => ({
+        ...rule,
+        to_port: rule.to_port || rule.port || 'Any',
+        protocol: rule.protocol || 'TCP',
+        from_ip: rule.from_ip || rule.source || 'Anywhere',
+        comment: rule.comment || rule.rule || rule.destination || 'Firewall policy'
+      }));
+      setRules(normalizedRules);
+      setStats({
+        status: data?.status || 'inactive',
+        defaultPolicy: data?.default_policy || 'deny (incoming)',
+        rulesCount: normalizedRules.length,
+        ipv6: data?.ipv6_enabled ? 'Enabled' : 'Disabled',
+        allowedCount: data?.allowed_rules_count || 0,
+        blockedCount: data?.blocked_rules_count || 0
+      });
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to load firewall configurations.");
+      toast.error("Failed to load host firewall (UFW) telemetry.");
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchFirewallData();
+    fetchFirewall();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    fetchFirewallData();
-  };
-
-  const filteredRules = firewallData.rules
-    ? firewallData.rules.filter(rule => 
-        rule.rule.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rule.protocol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rule.port.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rule.source.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rule.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rule.action.toLowerCase().includes(searchQuery.toLowerCase())
+  const columns = [
+    {
+      key: 'to_port',
+      label: 'To Port / Protocol',
+      sortable: true,
+      render: (val, row) => (
+        <span className="text-white font-weight-600">
+          {val} {row.protocol ? `/ ${row.protocol.toLowerCase()}` : ''}
+        </span>
       )
-    : [];
-
-  // Compute stat metrics dynamically from the rules list
-  const totalRules = firewallData.rules?.length || 0;
-  const allowedRulesCount = firewallData.rules?.filter(r => r.action?.toLowerCase() === 'allow').length || 0;
-  const blockedRulesCount = firewallData.rules?.filter(r => r.action?.toLowerCase() === 'block' || r.action?.toLowerCase() === 'deny').length || 0;
-
-  const getStatusBadgeClass = (status) => {
-    if (!status) return 'badge-secondary';
-    switch (status.toLowerCase()) {
-      case 'running':
-      case 'active':
-      case 'on':
-        return 'badge-running';
-      case 'stopped':
-      case 'inactive':
-      case 'off':
-        return 'badge-error';
-      default:
-        return 'badge-secondary';
+    },
+    {
+      key: 'action',
+      label: 'Action Rule',
+      sortable: true,
+      render: (val) => {
+        const isAllow = val?.toLowerCase() === 'allow';
+        return (
+          <span className={`status-badge ${isAllow ? 'status-badge-success' : 'status-badge-danger'}`}>
+            <span className={`status-dot ${isAllow ? 'success' : 'danger'}`} />
+            {val?.toUpperCase() || 'DENY'}
+          </span>
+        );
+      }
+    },
+    {
+      key: 'from_ip',
+      label: 'Source Address',
+      render: (val) => <span className="text-mono small text-secondary">{val || 'Anywhere'}</span>
+    },
+    {
+      key: 'comment',
+      label: 'Rule Comment',
+      render: (val) => <span className="small text-muted">{val || 'N/A'}</span>
     }
-  };
+  ];
 
-  const getActionBadgeClass = (action) => {
-    if (!action) return 'badge-secondary';
-    switch (action.toLowerCase()) {
-      case 'allow':
-      case 'accept':
-        return 'badge-running';
-      case 'block':
-      case 'deny':
-      case 'drop':
-        return 'badge-error';
-      default:
-        return 'badge-secondary';
-    }
-  };
+  if (loading) {
+    return (
+      <div className="container-fluid p-0">
+        <div className="page-header">
+          <h1 className="page-title">Firewall Security</h1>
+          <p className="page-subtitle">Configure ports, access lists, and UFW firewall policies</p>
+        </div>
+        <div className="row g-4 mb-4">
+          <div className="col-md-4"><SkeletonCard rows={2} /></div>
+          <div className="col-md-4"><SkeletonCard rows={2} /></div>
+          <div className="col-md-4"><SkeletonCard rows={2} /></div>
+        </div>
+        <SkeletonCard rows={6} />
+      </div>
+    );
+  }
+
+  const isUfwActive = stats?.status?.toLowerCase() === 'active';
 
   return (
-    <div className={`firewall-container ${isRefreshing ? 'refresh-animate' : ''}`}>
-      {/* Header */}
-      <div className="firewall-header-toolbar mb-3">
-        <div>
-          <h1 className="firewall-title">Firewall</h1>
-          <p className="firewall-subtitle">Manage security access control lists, inbound routes and traffic filtering</p>
+    <div className="firewall-container">
+      <div className="page-header">
+        <h1 className="page-title">Firewall Security</h1>
+        <p className="page-subtitle">Configure ports, access lists, and UFW firewall policies</p>
+      </div>
+
+      {/* Firewall Stats */}
+      <div className="row g-3 mb-4 firewall-stats-row">
+        <div className="col-md-4">
+          <div className={`card-base ${isUfwActive ? 'card-accent-secondary' : 'card-accent-danger'} p-3`}>
+            <span className="small text-muted d-block mb-1">Firewall Service Status</span>
+            <div className="d-flex align-items-center gap-2">
+              <span className={`status-dot ${isUfwActive ? 'success' : 'danger'} pulse`} />
+              <span className="h5 m-0 font-weight-700 text-white uppercase">{stats?.status}</span>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card-base card-accent-primary p-3">
+            <span className="small text-muted d-block mb-1">Default policy (inbound)</span>
+            <div className="d-flex align-items-center gap-2">
+              <Lock size={16} className="text-primary" />
+              <span className="h5 m-0 font-weight-700 text-white text-mono">{stats?.defaultPolicy}</span>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card-base card-accent-tertiary p-3">
+            <span className="small text-muted d-block mb-1">Total active policies</span>
+            <div className="d-flex align-items-center gap-2">
+              <Sliders size={16} className="text-secondary" />
+              <span className="h5 m-0 font-weight-700 text-white">{stats?.rulesCount} rules active</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="firewall-actions-row">
-        <div className="firewall-search position-relative">
-          <FiSearch className="position-absolute start-3 top-50 translate-middle-y text-secondary" style={{ left: '0.75rem' }} />
-          <input 
-            type="text" 
-            className="form-control ps-5 search-input" 
-            placeholder="Search firewall rules..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="ms-auto d-flex gap-2">
-          <button className="btn btn-outline-secondary border-color text-white d-flex align-items-center gap-2" onClick={handleRefresh} style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
-            <FiRefreshCw className={loading ? 'spin-animation' : ''} /> Refresh
+      {/* Rules Table */}
+      <div className="card-base-static p-4">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="d-flex align-items-center gap-2">
+            <Shield size={18} className="text-primary" />
+            <h4 className="m-0 text-white font-weight-600">Active Access Control Rules (ACL)</h4>
+          </div>
+          <button 
+            className="btn btn-outline-secondary btn-sm text-white border-color" 
+            onClick={fetchFirewall}
+          >
+            <RefreshCw size={12} className="me-1" /> Reload
           </button>
         </div>
-      </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="alert alert-danger border-0 mb-4 d-flex align-items-center gap-3 text-white" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)' }} role="alert">
-          <FiAlertTriangle className="text-danger flex-shrink-0" size={24} />
-          <div>
-            <strong className="d-block text-danger mb-1">Firewall Service Error</strong>
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Stats row cards */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-4">
-          <div className="firewall-stat-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Firewall Status</span>
-              <FiShield className="text-primary" size={20} />
-            </div>
-            <div className="d-flex align-items-center mt-2">
-              <span className={`firewall-status-badge ${getStatusBadgeClass(firewallData.status)}`}>
-                <span className="dot"></span>
-                {loading ? 'LOADING...' : firewallData.status?.toUpperCase()}
-              </span>
-            </div>
-            <div className="small text-muted mt-2">Default Policy: <code className="text-light">{firewallData.default_policy || 'N/A'}</code></div>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <div className="firewall-stat-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Rules Overview</span>
-              <FiLock className="text-info" size={20} />
-            </div>
-            <div className="fs-4 fw-bold text-white">{loading ? '...' : totalRules} Rules</div>
-            <div className="small text-muted mt-1">
-              IPv4: <span className="text-light">{firewallData.ipv4_rules || 0}</span> | IPv6: <span className="text-light">{firewallData.ipv6_rules || 0}</span>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <div className="firewall-stat-card p-3 rounded h-100" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Traffic Actions</span>
-              <FiCheckCircle className="text-success" size={20} />
-            </div>
-            <div className="fs-6 text-white mt-1">
-              <span className="text-success fw-bold">✓ Allowed:</span> {loading ? '...' : (firewallData.allowed_ports?.join(', ') || 'None')}
-            </div>
-            <div className="fs-6 text-white mt-1">
-              <span className="text-danger fw-bold">✗ Blocked:</span> {loading ? '...' : (firewallData.blocked_ports?.join(', ') || 'None')}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main rules table */}
-      <div className="firewall-table-card">
-        <div className="table-responsive">
-          <table className="firewall-table">
-            <thead>
-              <tr>
-                <th>Rule</th>
-                <th>Protocol</th>
-                <th>Port</th>
-                <th>Source</th>
-                <th>Destination</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                [1, 2, 3].map((i) => (
-                  <tr key={i} className="placeholder-loading-row">
-                    <td><div className="skeleton-text short" /></td>
-                    <td><div className="skeleton-text" /></td>
-                    <td><div className="skeleton-text short" /></td>
-                    <td><div className="skeleton-text" /></td>
-                    <td><div className="skeleton-text" /></td>
-                    <td><div className="skeleton-text short" /></td>
-                  </tr>
-                ))
-              ) : filteredRules.length > 0 ? (
-                filteredRules.map((rule, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <span className="fw-semibold text-white">{rule.rule}</span>
-                    </td>
-                    <td>
-                      <code className="text-secondary">{rule.protocol}</code>
-                    </td>
-                    <td>
-                      <code className="text-light">{rule.port}</code>
-                    </td>
-                    <td>
-                      <span className="text-secondary" style={{ fontSize: '0.85rem' }}>{rule.source}</span>
-                    </td>
-                    <td>
-                      <span className="text-secondary" style={{ fontSize: '0.85rem' }}>{rule.destination}</span>
-                    </td>
-                    <td>
-                      <span className={`firewall-status-badge ${getActionBadgeClass(rule.action)}`}>
-                        <span className="dot"></span>
-                        {rule.action?.toUpperCase()}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="text-center py-5 text-secondary">
-                    <FiShield size={32} className="mb-2 text-secondary opacity-50" />
-                    <p className="mb-0 fw-medium">No firewall rules detected.</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable 
+          columns={columns} 
+          data={rules}
+          pageSize={10}
+          emptyVariant="no-data"
+          emptyMessage="No firewall rules configured in the active UFW tables."
+        />
       </div>
     </div>
   );

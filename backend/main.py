@@ -188,6 +188,43 @@ def safe_check_output(args: list, default: str = "") -> str:
         logger.error(f"Execution of command {args} failed: {e}")
         return default
 
+def format_mb(value: float) -> str:
+    """
+    Format byte-derived megabyte values for API display.
+    """
+    return f"{round(value, 2)} MB"
+
+def get_dns_servers() -> list:
+    """
+    Retrieve configured DNS servers from the host when available.
+    """
+    servers = []
+    resolv_conf = "/etc/resolv.conf"
+    try:
+        if os.path.exists(resolv_conf):
+            with open(resolv_conf, "r") as f:
+                for line in f:
+                    parts = line.strip().split()
+                    if len(parts) >= 2 and parts[0] == "nameserver":
+                        servers.append(parts[1])
+    except Exception as e:
+        logger.debug(f"DNS resolver parsing failed: {e}")
+    return servers
+
+def get_default_gateway() -> str:
+    """
+    Retrieve the default gateway on Linux hosts, with a portable fallback.
+    """
+    try:
+        route_out = safe_check_output(["ip", "route", "show", "default"])
+        if route_out:
+            parts = route_out.split()
+            if "via" in parts:
+                return parts[parts.index("via") + 1]
+    except Exception as e:
+        logger.debug(f"Default gateway lookup failed: {e}")
+    return ""
+
 # ============================================================
 # FastAPI Application
 # ============================================================
@@ -573,47 +610,7 @@ def get_docker() -> list:
     except Exception as e:
         logger.exception(e)
 
-    # 3. Ultimate mock default data fallback
-    return [
-        {
-            "id": "1a2b3c4d5e6f",
-            "name": "backend-api",
-            "image": "cloud-admin-backend:latest",
-            "status": "running",
-            "ports": "0.0.0.0:8000->8000/tcp",
-            "created": "2 hours ago",
-            "hostname": "backend-api",
-            "command": "uvicorn main:app --host 0.0.0.0",
-            "network": "bridge",
-            "volumes": "None",
-            "cpu": 1.5,
-            "memory": 64,
-            "health": "Healthy",
-            "image_size": "N/A",
-            "restart_count": 0,
-            "ip_address": "-",
-            "network_mode": "bridge"
-        },
-        {
-            "id": "9f8e7d6c5b4a",
-            "name": "postgres-db",
-            "image": "postgres:16-alpine",
-            "status": "running",
-            "ports": "0.0.0.0:5432->5432/tcp",
-            "created": "3 hours ago",
-            "hostname": "postgres-db",
-            "command": "docker-entrypoint.sh postgres",
-            "network": "bridge",
-            "volumes": "pgdata:/var/lib/postgresql/data",
-            "cpu": 0.5,
-            "memory": 128,
-            "health": "Healthy",
-            "image_size": "N/A",
-            "restart_count": 0,
-            "ip_address": "-",
-            "network_mode": "bridge"
-        }
-    ]
+    return []
 
 @app.get("/api/docker/stats")
 def docker_stats() -> list:
@@ -660,11 +657,7 @@ def docker_stats() -> list:
         except Exception as e:
             logger.exception(e)
 
-    # Fallback to local default stats if docker SDK metrics fail
-    return [
-        {"id": "1a2b3c4d5e6f", "name": "backend-api", "cpu": 1.2, "memory_mb": 45.3, "memory_limit_mb": 7935.2},
-        {"id": "9f8e7d6c5b4a", "name": "postgres-db", "cpu": 0.4, "memory_mb": 98.7, "memory_limit_mb": 7935.2}
-    ]
+    return []
 
 @app.post("/api/docker/{container_name}/start")
 def start_container(container_name: str) -> dict:
@@ -680,7 +673,7 @@ def start_container(container_name: str) -> dict:
         except Exception as e:
             logger.exception(e)
             raise HTTPException(status_code=500, detail=str(e))
-    return {"success": True, "message": f"{container_name} started (Local fallback)"}
+    raise HTTPException(status_code=503, detail="Docker daemon is unavailable on this API host.")
 
 @app.post("/api/docker/{container_name}/stop")
 def stop_container(container_name: str) -> dict:
@@ -696,7 +689,7 @@ def stop_container(container_name: str) -> dict:
         except Exception as e:
             logger.exception(e)
             raise HTTPException(status_code=500, detail=str(e))
-    return {"success": True, "message": f"{container_name} stopped (Local fallback)"}
+    raise HTTPException(status_code=503, detail="Docker daemon is unavailable on this API host.")
 
 @app.post("/api/docker/{container_name}/restart")
 def restart_container(container_name: str) -> dict:
@@ -712,7 +705,7 @@ def restart_container(container_name: str) -> dict:
         except Exception as e:
             logger.exception(e)
             raise HTTPException(status_code=500, detail=str(e))
-    return {"success": True, "message": f"{container_name} restarted (Local fallback)"}
+    raise HTTPException(status_code=503, detail="Docker daemon is unavailable on this API host.")
 
 @app.get("/api/docker/{container_name}/logs")
 def get_container_logs(container_name: str) -> dict:
@@ -728,7 +721,7 @@ def get_container_logs(container_name: str) -> dict:
         except Exception as e:
             logger.exception(e)
             raise HTTPException(status_code=500, detail=str(e))
-    return {"container": container_name, "logs": "Running in local mock environment. Docker logging unavailable."}
+    raise HTTPException(status_code=503, detail="Docker daemon is unavailable on this API host.")
 
 # ============================================================
 # Networks
@@ -761,36 +754,35 @@ def get_networks() -> dict:
         except Exception as e:
             logger.exception(e)
 
-    # Local fallback for networks
-    if not docker_networks:
-        docker_networks = [
-            {"id": "13a2cb1a4b68", "name": "bridge", "driver": "bridge", "scope": "local", "subnet": "172.17.0.0/16", "containers": 2},
-            {"id": "0ad1ae39dde9", "name": "host", "driver": "host", "scope": "local", "subnet": "-", "containers": 0},
-            {"id": "ea91a3159c89", "name": "none", "driver": "null", "scope": "local", "subnet": "-", "containers": 0}
-        ]
-
     interfaces = []
     try:
+        addrs_by_name = psutil.net_if_addrs()
         for name, stats in psutil.net_if_stats().items():
+            addresses = addrs_by_name.get(name, [])
+            ip_address = next((addr.address for addr in addresses if getattr(addr.family, "name", "") == "AF_INET"), "-")
+            mac_address = next((addr.address for addr in addresses if getattr(addr.family, "name", "") in ["AF_LINK", "AF_PACKET"]), "-")
             interfaces.append({
                 "name": name,
                 "status": "UP" if stats.isup else "DOWN",
                 "speed": f"{stats.speed} Mbps" if stats.speed > 0 else "-",
                 "mtu": getattr(stats, 'mtu', 1500),
-                "ip": next(iter([addr.address for addr in psutil.net_if_addrs().get(name, []) if addr.family.name == 'AF_INET']), "-")
+                "ip": ip_address,
+                "mac": mac_address
             })
     except Exception as e:
         logger.exception(e)
 
-    if not interfaces:
-        interfaces = [
-            {"name": "eth0", "status": "UP", "mtu": 1500, "ip": DEFAULT_PRIVATE_IP, "speed": "10000 Mbps"},
-            {"name": "lo", "status": "UP", "mtu": 65536, "ip": "127.0.0.1", "speed": "Loopback"}
-        ]
+    traffic = psutil.net_io_counters()
+    dns_servers = get_dns_servers()
+    gateway = get_default_gateway()
 
     return {
         "docker_networks": docker_networks,
         "interfaces": interfaces,
+        "dns_servers": dns_servers,
+        "gateway": gateway,
+        "rx_bytes": format_mb(traffic.bytes_recv / (1024 * 1024)),
+        "tx_bytes": format_mb(traffic.bytes_sent / (1024 * 1024)),
         "azure": {
             "public_ip": DEFAULT_PUBLIC_IP,
             "private_ip": DEFAULT_PRIVATE_IP,
@@ -2055,5 +2047,3 @@ def git_commit(body: GitCommitRequest) -> dict:
     except Exception as e:
         logger.exception(e)
         raise HTTPException(status_code=500, detail=str(e))
-
-

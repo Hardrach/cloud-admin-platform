@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
+import { FiGithub } from 'react-icons/fi';
 import { 
-  FiGrid, 
-  FiServer, 
-  FiActivity, 
-  FiShield, 
-  FiCpu, 
-  FiSettings, 
-  FiUser, 
-  FiChevronLeft, 
-  FiChevronRight,
-  FiChevronDown,
-  FiChevronUp,
-  FiGlobe,
-  FiTerminal,
-  FiFileText,
-  FiAlertCircle,
-  FiLock,
-  FiKey,
-  FiCode,
-  FiGithub
-} from 'react-icons/fi';
-import { RiHardDrive3Line } from 'react-icons/ri';
+  LayoutDashboard, 
+  Server, 
+  Activity, 
+  Shield, 
+  Cpu, 
+  Settings, 
+  User, 
+  ChevronLeft, 
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Globe,
+  Terminal,
+  FileText,
+  AlertCircle,
+  Lock,
+  Key,
+  Code,
+  HardDrive
+} from 'lucide-react';
 
 const Sidebar = ({ isCollapsed, setIsCollapsed, activeItem, setActiveItem, isMobileOpen, setIsMobileOpen }) => {
   // Keep track of which groups are expanded
@@ -49,64 +49,64 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, activeItem, setActiveItem, isMob
     {
       id: 'dashboard',
       name: 'Dashboard',
-      icon: <FiGrid />,
+      icon: <LayoutDashboard size={18} />,
       isGroup: false,
     },
     {
       id: 'infrastructure',
       name: 'Infrastructure',
-      icon: <FiServer />,
+      icon: <Server size={18} />,
       isGroup: true,
       children: [
-        { id: 'vm', name: 'Virtual Machines', icon: <FiServer /> },
-        { id: 'docker', name: 'Docker', icon: <FiTerminal /> },
-        { id: 'networks', name: 'Networks', icon: <FiGlobe /> },
-        { id: 'storage', name: 'Storage', icon: <RiHardDrive3Line /> }
+        { id: 'vm', name: 'Virtual Machines', icon: <Server size={16} /> },
+        { id: 'docker', name: 'Docker', icon: <Terminal size={16} /> },
+        { id: 'networks', name: 'Networks', icon: <Globe size={16} /> },
+        { id: 'storage', name: 'Storage', icon: <HardDrive size={16} /> }
       ]
     },
     {
       id: 'monitoring',
       name: 'Monitoring',
-      icon: <FiActivity />,
+      icon: <Activity size={18} />,
       isGroup: true,
       children: [
-        { id: 'metrics', name: 'Metrics', icon: <FiActivity /> },
-        { id: 'logs', name: 'Logs', icon: <FiFileText /> },
-        { id: 'alerts', name: 'Alerts', icon: <FiAlertCircle /> }
+        { id: 'metrics', name: 'Metrics', icon: <Activity size={16} /> },
+        { id: 'logs', name: 'Logs', icon: <FileText size={16} /> },
+        { id: 'alerts', name: 'Alerts', icon: <AlertCircle size={16} /> }
       ]
     },
     {
       id: 'security',
       name: 'Security',
-      icon: <FiShield />,
+      icon: <Shield size={18} />,
       isGroup: true,
       children: [
-        { id: 'firewall', name: 'Firewall', icon: <FiShield /> },
-        { id: 'ssh', name: 'SSH Keys', icon: <FiKey /> },
-        { id: 'iam', name: 'IAM', icon: <FiLock /> }
+        { id: 'firewall', name: 'Firewall', icon: <Shield size={16} /> },
+        { id: 'ssh', name: 'SSH Keys', icon: <Key size={16} /> },
+        { id: 'iam', name: 'IAM', icon: <Lock size={16} /> }
       ]
     },
     {
       id: 'devops',
       name: 'DevOps',
-      icon: <FiCpu />,
+      icon: <Cpu size={18} />,
       isGroup: true,
       children: [
-        { id: 'terraform', name: 'Terraform', icon: <FiCode /> },
-        { id: 'compose', name: 'Docker Compose', icon: <FiTerminal /> },
-        { id: 'github', name: 'GitHub', icon: <FiGithub /> }
+        { id: 'terraform', name: 'Terraform', icon: <Code size={16} /> },
+        { id: 'compose', name: 'Docker Compose', icon: <Terminal size={16} /> },
+        { id: 'github', name: 'GitHub', icon: <FiGithub size={16} /> }
       ]
     },
     {
       id: 'settings',
       name: 'Settings',
-      icon: <FiSettings />,
+      icon: <Settings size={18} />,
       isGroup: false,
     },
     {
       id: 'profile',
       name: 'Profile',
-      icon: <FiUser />,
+      icon: <User size={18} />,
       isGroup: false,
     }
   ];
@@ -116,7 +116,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, activeItem, setActiveItem, isMob
       {/* Brand Header */}
       <div className="sidebar-brand">
         <div className="brand-icon">
-          <FiCpu style={{ strokeWidth: 2.5 }} />
+          <Cpu size={22} style={{ strokeWidth: 2.5 }} />
         </div>
         <span className="brand-text">CloudAdmin</span>
       </div>
@@ -135,7 +135,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, activeItem, setActiveItem, isMob
                   e.preventDefault();
                   handleItemClick(group.id, null, group.name);
                 }}
-                title={group.name}
+                title={isCollapsed ? group.name : undefined}
               >
                 <span className="menu-item-icon">{group.icon}</span>
                 <span className="menu-item-text">{group.name}</span>
@@ -155,7 +155,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, activeItem, setActiveItem, isMob
                 <span>{group.name}</span>
                 {!isCollapsed && (
                   <span>
-                    {isGroupExpanded ? <FiChevronUp size={10} /> : <FiChevronDown size={10} />}
+                    {isGroupExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
                   </span>
                 )}
               </div>
@@ -175,7 +175,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, activeItem, setActiveItem, isMob
                           e.preventDefault();
                           handleItemClick(child.id, group.name, child.name);
                         }}
-                        title={child.name}
+                        title={isCollapsed ? child.name : undefined}
                       >
                         <span className="menu-item-icon">{child.icon}</span>
                         <span className="menu-item-text">{child.name}</span>
@@ -196,7 +196,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, activeItem, setActiveItem, isMob
           onClick={() => setIsCollapsed(!isCollapsed)}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {isCollapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
+          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
     </aside>

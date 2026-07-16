@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import './Settings.css';
 import {
-  FiSettings,
-  FiMonitor,
-  FiBell,
-  FiServer,
-  FiShield,
-  FiInfo,
-  FiGlobe
-} from 'react-icons/fi';
+  Settings as SettingsIcon,
+  Monitor,
+  Server,
+  Info,
+  Globe
+} from 'lucide-react';
 
 const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
   const [settings, setSettings] = useState({
@@ -19,7 +17,7 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
     refreshInterval: '30 seconds',
     darkMode: !isLightTheme,
     lightMode: isLightTheme,
-    accentColor: '#00C8FF',
+    accentColor: '#00D4FF',
   });
 
   React.useEffect(() => {
@@ -43,19 +41,19 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
   return (
     <div className="settings-container">
       {/* Header */}
-      <div className="settings-header">
-        <h1 className="settings-title">Settings</h1>
-        <p className="settings-subtitle">Platform configuration, appearance preferences, and system parameters</p>
+      <div className="page-header">
+        <h1 className="page-title">Settings</h1>
+        <p className="page-subtitle">Platform configuration, appearance preferences, and system parameters</p>
       </div>
 
       <div className="row g-4">
-        <div className="col-lg-8">
+        <div className="col-xl-7 col-lg-7">
 
-          {/* ── General ── */}
+          {/* General */}
           <div className="settings-section">
             <div className="settings-section-header">
-              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(0, 200, 255, 0.1)', color: 'var(--primary-color)' }}>
-                <FiGlobe />
+              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(0, 212, 255, 0.08)', color: 'var(--color-primary)' }}>
+                <Globe size={18} />
               </div>
               <div>
                 <h3 className="settings-section-title">General</h3>
@@ -86,11 +84,11 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
             </div>
           </div>
 
-          {/* ── Appearance ── */}
+          {/* Appearance */}
           <div className="settings-section">
             <div className="settings-section-header">
-              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(61, 213, 152, 0.1)', color: 'var(--secondary-color)' }}>
-                <FiMonitor />
+              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(52, 211, 153, 0.08)', color: 'var(--color-secondary)' }}>
+                <Monitor size={18} />
               </div>
               <div>
                 <h3 className="settings-section-title">Appearance</h3>
@@ -99,18 +97,18 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
             </div>
             <div className="settings-section-body">
               <div className="settings-row">
-                <span className="settings-row-label">Dark Mode</span>
+                <span className="settings-row-label">Dark Theme Active</span>
                 <button
-                  className={`toggle-switch ${settings.darkMode ? 'active' : ''}`}
-                  onClick={() => handleThemeChange('dark')}
+                  className={`toggle-switch-custom ${settings.darkMode ? 'active' : ''}`}
+                  onClick={() => handleThemeChange(settings.darkMode ? 'light' : 'dark')}
                   aria-label="Toggle dark mode"
                 />
               </div>
               <div className="settings-row">
-                <span className="settings-row-label">Light Mode</span>
+                <span className="settings-row-label">Light Theme Active</span>
                 <button
-                  className={`toggle-switch ${settings.lightMode ? 'active' : ''}`}
-                  onClick={() => handleThemeChange('light')}
+                  className={`toggle-switch-custom ${settings.lightMode ? 'active' : ''}`}
+                  onClick={() => handleThemeChange(settings.lightMode ? 'dark' : 'light')}
                   aria-label="Toggle light mode"
                 />
               </div>
@@ -122,9 +120,9 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
                     height: 20,
                     borderRadius: 4,
                     backgroundColor: settings.accentColor,
-                    border: '1px solid var(--border-color)'
+                    border: '1px solid var(--border-default)'
                   }} />
-                  <code style={{ color: 'var(--primary-color)', fontSize: '0.8rem' }}>{settings.accentColor}</code>
+                  <code style={{ color: 'var(--color-primary)', fontSize: '0.8rem' }}>{settings.accentColor}</code>
                 </div>
               </div>
             </div>
@@ -133,13 +131,13 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
         </div>
 
         {/* Right Column */}
-        <div className="col-lg-4">
+        <div className="col-xl-5 col-lg-5">
 
-          {/* ── API ── */}
+          {/* API */}
           <div className="settings-section">
             <div className="settings-section-header">
-              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(0, 200, 255, 0.1)', color: 'var(--primary-color)' }}>
-                <FiServer />
+              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(0, 212, 255, 0.08)', color: 'var(--color-primary)' }}>
+                <Server size={18} />
               </div>
               <div>
                 <h3 className="settings-section-title">API Configuration</h3>
@@ -149,7 +147,7 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
             <div className="settings-section-body">
               <div className="settings-row">
                 <span className="settings-row-label">Backend URL</span>
-                <code className="settings-row-value" style={{ color: 'var(--primary-color)', fontSize: '0.8rem' }}>{apiUrl}</code>
+                <code className="settings-row-value text-mono" style={{ color: 'var(--color-primary)', fontSize: '0.8rem' }}>{apiUrl}</code>
               </div>
               <div className="settings-row">
                 <span className="settings-row-label">API Version</span>
@@ -158,8 +156,8 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
               <div className="settings-row">
                 <span className="settings-row-label">Connection</span>
                 <span className="settings-row-value d-flex align-items-center">
-                  <span className="status-dot online"></span>
-                  <span style={{ color: 'var(--success-color)' }}>Connected</span>
+                  <span className="status-dot success pulse me-2"></span>
+                  <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>Connected</span>
                 </span>
               </div>
               <div className="settings-row">
@@ -169,11 +167,11 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
             </div>
           </div>
 
-          {/* ── About ── */}
+          {/* About */}
           <div className="settings-section">
             <div className="settings-section-header">
-              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(144, 167, 191, 0.1)', color: 'var(--text-secondary)' }}>
-                <FiInfo />
+              <div className="settings-section-icon" style={{ backgroundColor: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}>
+                <Info size={18} />
               </div>
               <div>
                 <h3 className="settings-section-title">About</h3>
@@ -187,7 +185,7 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
               </div>
               <div className="settings-row">
                 <span className="settings-row-label">Build</span>
-                <span className="settings-row-value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>2026.07.15</span>
+                <span className="settings-row-value text-mono" style={{ fontSize: '0.8rem' }}>2026.07.15</span>
               </div>
               <div className="settings-row">
                 <span className="settings-row-label">React</span>
@@ -204,11 +202,11 @@ const Settings = ({ isLightTheme, toggleGlobalTheme }) => {
             </div>
           </div>
 
-          {/* ── Platform Identity ── */}
+          {/* Platform Identity */}
           <div className="settings-section">
             <div className="settings-section-header">
-              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(0, 200, 255, 0.1)', color: 'var(--primary-color)' }}>
-                <FiSettings />
+              <div className="settings-section-icon" style={{ backgroundColor: 'rgba(0, 212, 255, 0.08)', color: 'var(--color-primary)' }}>
+                <SettingsIcon size={18} />
               </div>
               <div>
                 <h3 className="settings-section-title">Platform Identity</h3>

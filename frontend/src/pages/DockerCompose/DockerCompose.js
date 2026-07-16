@@ -1,207 +1,133 @@
 import React, { useState, useEffect } from 'react';
 import './DockerCompose.css';
 import { getDockerCompose } from '../../services/api';
+import { useToast } from '../../components/Toast/Toast';
+import { SkeletonCard } from '../../components/Skeleton/Skeleton';
+import { EmptyState } from '../../components/EmptyState/EmptyState';
 import { 
-  FiLayers, 
-  FiPackage, 
-  FiRefreshCw,
-  FiAlertTriangle,
-  FiSearch
-} from 'react-icons/fi';
+  Layers, 
+  FileCode,
+  RefreshCw
+} from 'lucide-react';
 
 const DockerCompose = () => {
-  const [composeData, setComposeData] = useState({ version: null, containers: [] });
+  const [composeData, setComposeData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const toast = useToast();
 
-  const fetchComposeData = async () => {
+  const fetchCompose = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await getDockerCompose();
-      setComposeData(data || { version: null, containers: [] });
+      const containers = data?.containers || [];
+      const generatedYaml = containers.length ? [
+        'services:',
+        ...containers.map((container) => [
+          `  ${container.name || container.container}:`,
+          `    image: ${container.image || 'unknown'}`,
+          `    container_name: ${container.container || container.name}`,
+          `    status: ${container.status || 'unknown'}`
+        ].join('\n'))
+      ].join('\n') : '';
+      setComposeData({
+        ...data,
+        raw_yaml: data?.raw_yaml || generatedYaml,
+        services_count: data?.services_count || containers.length,
+        project_path: data?.project_path || 'cloud-admin-platform'
+      });
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to load Docker Compose details.");
+      toast.error("Failed to load Docker Compose configuration telemetry.");
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchComposeData();
+    fetchCompose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    fetchComposeData();
-  };
+  if (loading) {
+    return (
+      <div className="container-fluid p-0">
+        <div className="page-header">
+          <h1 className="page-title">Docker Compose</h1>
+          <p className="page-subtitle">Inspect stack configurations and deployment definitions</p>
+        </div>
+        <SkeletonCard rows={10} />
+      </div>
+    );
+  }
 
-  const filteredContainers = composeData.containers
-    ? composeData.containers.filter(c => 
-        c.project.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.image.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
+  // Ensure content is parsed safely
+  const rawYaml = composeData?.raw_yaml || '';
+  const servicesCount = composeData?.services_count || 0;
+  const projectPath = composeData?.project_path || '/workspace';
 
-  // Compute stat metrics dynamically
-  const activeProjects = [...new Set(composeData.containers?.map(c => c.project) || [])].length || 0;
-  const runningContainers = composeData.containers?.filter(c => c.status?.toLowerCase().includes('up') || c.status?.toLowerCase().includes('running')).length || 0;
-  const stoppedContainers = (composeData.containers?.length || 0) - runningContainers;
-
-  const getStatusBadgeClass = (status) => {
-    if (!status) return 'badge-secondary';
-    if (status.toLowerCase().includes('up') || status.toLowerCase().includes('running')) return 'badge-running';
-    return 'badge-error';
-  };
+  if (!rawYaml) {
+    return (
+      <div className="container-fluid p-0">
+        <div className="page-header">
+          <h1 className="page-title">Docker Compose</h1>
+          <p className="page-subtitle">Inspect stack configurations and deployment definitions</p>
+        </div>
+        <EmptyState 
+          variant="no-data" 
+          title="Compose Stack Offline"
+          description="No active docker-compose config files were detected in the deployment folder."
+          actionText="Refresh stack configuration"
+          onActionClick={fetchCompose}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className={`compose-container ${isRefreshing ? 'refresh-animate' : ''}`}>
+    <div className="compose-container">
       {/* Header */}
-      <div className="compose-header-toolbar mb-3">
-        <div>
-          <h1 className="compose-title">Docker Compose</h1>
-          <p className="compose-subtitle">Monitor multi-container Docker applications and stack deployments</p>
+      <div className="page-header">
+        <h1 className="page-title">Docker Compose</h1>
+        <p className="page-subtitle">Inspect stack configurations and deployment definitions</p>
+      </div>
+
+      {/* Meta details */}
+      <div className="row g-4 mb-4">
+        <div className="col-md-6">
+          <div className="card-base card-accent-primary p-3">
+            <span className="small text-muted d-block mb-1">Stack project path</span>
+            <span className="h6 m-0 font-weight-700 text-white text-mono">{projectPath}</span>
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="card-base card-accent-secondary p-3">
+            <span className="small text-muted d-block mb-1">Defined Services Stack</span>
+            <div className="d-flex align-items-center gap-2">
+              <Layers size={16} className="text-secondary" />
+              <span className="h5 m-0 font-weight-700 text-white">{servicesCount} microservices configured</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="compose-actions-row">
-        <div className="compose-search position-relative">
-          <FiSearch className="position-absolute start-3 top-50 translate-middle-y text-secondary" style={{ left: '0.75rem' }} />
-          <input 
-            type="text" 
-            className="form-control ps-5 search-input" 
-            placeholder="Search Docker Compose..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="ms-auto d-flex gap-2">
-          <button className="btn btn-outline-secondary border-color text-white d-flex align-items-center gap-2" onClick={handleRefresh} style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
-            <FiRefreshCw className={loading ? 'spin-animation' : ''} /> Refresh
+      {/* Yaml Editor wrapper */}
+      <div className="compose-yaml-panel">
+        <div className="compose-yaml-header">
+          <div className="d-flex align-items-center gap-2">
+            <FileCode size={16} className="text-primary" />
+            <span className="small text-secondary fw-semibold">docker-compose.yml</span>
+          </div>
+          <button 
+            className="btn btn-outline-secondary btn-sm text-white border-color" 
+            onClick={fetchCompose}
+          >
+            <RefreshCw size={12} className="me-1" /> Reload Project
           </button>
         </div>
-      </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="alert alert-danger border-0 mb-4 d-flex align-items-center gap-3 text-white" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)' }} role="alert">
-          <FiAlertTriangle className="text-danger flex-shrink-0" size={24} />
-          <div>
-            <strong className="d-block text-danger mb-1">Docker Compose Service Error</strong>
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-3">
-          <div className="compose-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Compose Version</span>
-              <FiLayers className="text-primary" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white">{loading ? '...' : (composeData.version || 'v2.29.2')}</div>
-            <div className="small text-muted mt-1">Docker Engine CLI plugin</div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="compose-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Projects</span>
-              <FiPackage className="text-info" size={20} />
-            </div>
-            <div className="fs-4 fw-bold text-white">{loading ? '...' : activeProjects}</div>
-            <div className="small text-muted mt-1">Active multi-container stacks</div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="compose-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Running Containers</span>
-              <FiPackage className="text-success" size={20} />
-            </div>
-            <div className="fs-4 fw-bold text-success">{loading ? '...' : runningContainers}</div>
-            <div className="small text-muted mt-1">Active instances linked to Compose</div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="compose-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Stopped Containers</span>
-              <FiPackage className="text-danger" size={20} />
-            </div>
-            <div className="fs-4 fw-bold text-danger">{loading ? '...' : stoppedContainers}</div>
-            <div className="small text-muted mt-1">Exited instances linked to Compose</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table */}
-      <div className="compose-table-card">
-        <div className="table-responsive">
-          <table className="compose-table">
-            <thead>
-              <tr>
-                <th>Project</th>
-                <th>Container</th>
-                <th>Status</th>
-                <th>Ports</th>
-                <th>Image</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                [1].map((i) => (
-                  <tr key={i} className="placeholder-loading-row">
-                    <td><div className="skeleton-text short" /></td>
-                    <td><div className="skeleton-text" /></td>
-                    <td><div className="skeleton-text short" /></td>
-                    <td><div className="skeleton-text" /></td>
-                    <td><div className="skeleton-text" /></td>
-                  </tr>
-                ))
-              ) : filteredContainers.length > 0 ? (
-                filteredContainers.map((container, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <span className="fw-semibold text-white">{container.project}</span>
-                    </td>
-                    <td>
-                      <span className="text-light">{container.name}</span>
-                    </td>
-                    <td>
-                      <span className={`compose-status-badge ${getStatusBadgeClass(container.status)}`}>
-                        <span className="dot"></span>
-                        {container.status?.toUpperCase()}
-                      </span>
-                    </td>
-                    <td>
-                      <code className="text-secondary" style={{ fontSize: '0.8rem' }}>{container.ports || '-'}</code>
-                    </td>
-                    <td>
-                      <code className="text-light" style={{ fontSize: '0.8rem' }}>{container.image}</code>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="text-center py-5 text-secondary">
-                    <FiLayers size={32} className="mb-2 text-secondary opacity-50" />
-                    <p className="mb-0 fw-medium">No Docker Compose projects found.</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <pre className="compose-terminal">
+          {rawYaml}
+        </pre>
       </div>
     </div>
   );

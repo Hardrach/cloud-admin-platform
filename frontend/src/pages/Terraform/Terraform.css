@@ -1,80 +1,93 @@
-/* Terraform Page Styles */
+/* ============================================================
+   Terraform Page Styles
+   ============================================================ */
 
 .terraform-container {
-  padding-bottom: 2rem;
-  transition: opacity 0.3s ease;
+  padding-bottom: var(--space-8);
 }
 
-.terraform-container.refresh-animate {
-  opacity: 0.7;
+.terraform-console-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
-.terraform-header-toolbar {
+.terraform-console-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
 }
 
-.terraform-title {
-  font-weight: 700;
-  font-size: 1.75rem;
-  color: var(--text-color);
-  margin-bottom: 0.25rem;
+.terraform-terminal {
+  background-color: var(--bg-base);
+  padding: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-terminal-orange);
+  height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  white-space: pre-wrap;
 }
 
-.terraform-subtitle {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-/* Toolbar search and actions */
-.terraform-actions-row {
+.tf-action-btn-group {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
   flex-wrap: wrap;
 }
 
-/* Stat Cards */
-.tf-stat-card {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+.tf-btn {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: all var(--transition-fast);
 }
 
-.tf-stat-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--text-secondary) !important;
+.tf-btn-plan {
+  background-color: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.2);
+  color: var(--color-primary);
 }
 
-/* Large Status Widget Card */
-.tf-status-card-widget {
-  transition: transform 0.2s ease;
+.tf-btn-plan:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: var(--color-contrast);
 }
 
-.tf-status-card-widget:hover {
-  transform: translateY(-2px);
+.tf-btn-apply {
+  background-color: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.2);
+  color: var(--color-secondary);
 }
 
-.bg-success-soft {
-  background-color: rgba(61, 213, 152, 0.12) !important;
-  color: var(--success-color) !important;
-  border-color: rgba(61, 213, 152, 0.3) !important;
+.tf-btn-apply:hover:not(:disabled) {
+  background-color: var(--color-secondary);
+  color: var(--color-contrast);
 }
 
-.bg-danger-soft {
-  background-color: rgba(255, 93, 115, 0.12) !important;
-  color: var(--danger-color) !important;
-  border-color: rgba(255, 93, 115, 0.3) !important;
+.tf-btn-destroy {
+  background-color: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: var(--color-danger);
 }
 
-/* Loading Shimmer Placeholders */
-.skeleton-text {
-  height: 12px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  width: 80%;
+.tf-btn-destroy:hover:not(:disabled) {
+  background-color: var(--color-danger);
+  color: var(--color-white);
+}
+
+.tf-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

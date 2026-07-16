@@ -1,487 +1,257 @@
 import React, { useState, useEffect } from 'react';
 import './GitHub.css';
-import { getGitHub, fetchGit, pullGit, pushGit, commitGit } from '../../services/api';
 import { 
-  FiGithub, 
-  FiGitBranch, 
-  FiRefreshCw,
-  FiAlertTriangle,
-  FiFileText,
-  FiActivity,
-  FiCalendar,
-  FiUser,
-  FiCopy,
-  FiCheckCircle,
-  FiArrowUp,
-  FiArrowDown,
-  FiClock,
-  FiTag,
-  FiDatabase,
-  FiCommand,
-  FiPlay
-} from 'react-icons/fi';
+  getGitHub, 
+  fetchGit, 
+  pullGit, 
+  pushGit
+} from '../../services/api';
+import { useToast } from '../../components/Toast/Toast';
+import { useConfirm } from '../../components/ConfirmDialog/ConfirmDialog';
+import { DataTable } from '../../components/DataTable/DataTable';
+import { SkeletonCard } from '../../components/Skeleton/Skeleton';
+import { EmptyState } from '../../components/EmptyState/EmptyState';
+import { 
+  GitBranch, 
+  Download, 
+  Upload, 
+  RefreshCw, 
+  Calendar,
+  User,
+  Info,
+  ExternalLink
+} from 'lucide-react';
+import { FiGithub } from 'react-icons/fi';
 
 const GitHub = () => {
-  const [gitData, setGitData] = useState({
-    repository: '',
-    branch: '',
-    last_commit: { hash: '', message: '', author: '', date: '' },
-    remote: '',
-    commits: 0,
-    ahead: 0,
-    behind: 0,
-    status: '',
-    recent_commits: [],
-    branches: [],
-    tags: [],
-    size: '',
-    files: []
-  });
+  const [gitData, setGitData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Git Action States
   const [actionLoading, setActionLoading] = useState(false);
-  const [actionMessage, setActionMessage] = useState(null);
-  const [commitMessage, setCommitMessage] = useState('');
-  const [copied, setCopied] = useState(false);
+  const toast = useToast();
+  const confirm = useConfirm();
 
-  const fetchGitData = async () => {
+  const fetchRepoData = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await getGitHub();
-      setGitData(data || {
-        repository: 'cloud-admin-platform',
-        branch: 'main',
-        last_commit: { hash: 'unknown', message: 'no commit detected', author: 'system', date: 'N/A' },
-        remote: 'https://github.com/Hardrach/cloud-admin-platform.git',
-        commits: 0,
-        ahead: 0,
-        behind: 0,
-        status: 'Clean',
-        recent_commits: [],
-        branches: ['main'],
-        tags: [],
-        size: 'N/A',
-        files: []
-      });
+      setGitData(data);
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to load Git repository details.");
+      toast.error("Failed to load GitHub repository details.");
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchGitData();
+    fetchRepoData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    fetchGitData();
-  };
+  const handleAction = async (actionFn, actionName, confirmType = 'info') => {
+    const isPush = actionName === 'Push';
+    const approved = await confirm({
+      title: `Git ${actionName}`,
+      message: isPush 
+        ? `Are you sure you want to run Git Push to origin? This will publish committed revisions to the remote master branch.`
+        : `Are you sure you want to run Git ${actionName}?`,
+      type: confirmType,
+      confirmText: `Run ${actionName}`,
+      cancelText: 'Cancel'
+    });
 
-  const handleAction = async (actionFn, successMsg) => {
+    if (!approved) return;
+
     try {
       setActionLoading(true);
-      setActionMessage(null);
-      setError(null);
-      const res = await actionFn();
-      if (res.success !== false) {
-        setActionMessage({ type: 'success', text: res.message || successMsg });
-        // Refresh git info after action
-        await fetchGitData();
+      toast.info(`Executing Git ${actionName.toLowerCase()} stream...`);
+      const data = await actionFn();
+      
+      if (data.status === 'success' || data.success) {
+        toast.success(`Git ${actionName} operation completed successfully.`);
       } else {
-        setActionMessage({ type: 'error', text: res.message || "Operation completed with warnings." });
+        toast.warning(data.output || `Git ${actionName} finished with warning remarks.`);
       }
+      
+      await fetchRepoData();
     } catch (err) {
       console.error(err);
-      setActionMessage({ type: 'error', text: err.response?.data?.detail || err.message || "Action failed." });
+      toast.error(`Git ${actionName} failed to execute.`);
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleCommitSubmit = async (e) => {
-    e.preventDefault();
-    if (!commitMessage.trim()) return;
-    
-    await handleAction(
-      () => commitGit(commitMessage),
-      "Changes committed successfully."
+  const columns = [
+    {
+      key: 'hash',
+      label: 'Commit SHA',
+      render: (val) => <code className="small text-primary text-mono">{val?.substring(0, 7) || 'N/A'}</code>
+    },
+    {
+      key: 'message',
+      label: 'Message',
+      render: (val) => <span className="text-white font-weight-500">{val}</span>
+    },
+    {
+      key: 'author',
+      label: 'Author',
+      render: (val) => (
+        <div className="d-flex align-items-center gap-1.5 small text-secondary">
+          <User size={13} />
+          <span>{val || 'Unknown'}</span>
+        </div>
+      )
+    },
+    {
+      key: 'date',
+      label: 'Commited Date',
+      render: (val) => (
+        <div className="d-flex align-items-center gap-1.5 small text-muted">
+          <Calendar size={13} />
+          <span>{val || 'N/A'}</span>
+        </div>
+      )
+    }
+  ];
+
+  if (loading) {
+    return (
+      <div className="container-fluid p-0">
+        <div className="page-header">
+          <h1 className="page-title">Version Control (GitHub)</h1>
+          <p className="page-subtitle">Inspect repository status, commits history, and publish workspace modifications</p>
+        </div>
+        <SkeletonCard rows={8} />
+      </div>
     );
-    setCommitMessage('');
-  };
+  }
 
-  const copyToClipboard = (text) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  // Fallback checks for Git installations inside container workspace
+  const isGitAvailable = gitData?.git_version && gitData?.status?.toLowerCase() !== 'unknown';
+  const recentCommits = gitData?.recent_commits || [];
 
-  const getStatusBadgeClass = (status) => {
-    if (!status) return 'badge-secondary';
-    switch (status.toLowerCase()) {
-      case 'clean':
-        return 'badge-running';
-      case 'modified':
-        return 'badge-warning';
-      case 'conflicts':
-        return 'badge-error';
-      case 'untracked':
-        return 'badge-info';
-      default:
-        return 'badge-secondary';
-    }
-  };
-
-  const getStatusTextPrefix = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'clean': return '🟢 ';
-      case 'modified': return '🟡 ';
-      case 'conflicts': return '🔴 ';
-      case 'untracked': return '🔵 ';
-      default: return '⚪ ';
-    }
-  };
-
-  const getFileStatusClass = (status) => {
-    switch (status) {
-      case 'untracked': return 'text-info';
-      case 'modified': return 'text-warning';
-      case 'deleted': return 'text-danger';
-      case 'added': return 'text-success';
-      default: return 'text-secondary';
-    }
-  };
+  if (!isGitAvailable) {
+    return (
+      <div className="container-fluid p-0">
+        <div className="page-header">
+          <h1 className="page-title">Version Control (GitHub)</h1>
+          <p className="page-subtitle">Inspect repository status, commits history, and publish workspace modifications</p>
+        </div>
+        <EmptyState 
+          variant="git-not-found" 
+          description="Ensure git is configured and /workspace is trusted in the container settings."
+          actionText="Retry Repository Audit"
+          onActionClick={fetchRepoData}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className={`github-container ${isRefreshing ? 'refresh-animate' : ''}`}>
+    <div className="github-container">
       {/* Header */}
-      <div className="github-header-toolbar mb-3">
-        <div>
-          <h1 className="github-title">Git & GitHub</h1>
-          <p className="github-subtitle">Monitor version control tracking parameters, repository status, and deploy actions</p>
-        </div>
+      <div className="page-header">
+        <h1 className="page-title">Version Control (GitHub)</h1>
+        <p className="page-subtitle">Inspect repository status, commits history, and publish workspace modifications</p>
       </div>
 
-      {/* Toolbar */}
-      <div className="github-actions-row mb-4">
-        <div className="d-flex gap-2 flex-wrap">
-          <button 
-            className="btn btn-primary d-flex align-items-center gap-2" 
-            disabled={actionLoading || loading}
-            onClick={() => handleAction(fetchGit, "Repository origin fetched successfully.")}
-          >
-            <FiRefreshCw /> Fetch Origin
-          </button>
-          <button 
-            className="btn btn-outline-info text-white d-flex align-items-center gap-2"
-            style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
-            disabled={actionLoading || loading}
-            onClick={() => handleAction(pullGit, "Updates pulled successfully.")}
-          >
-            <FiArrowDown /> Pull Updates
-          </button>
-          <button 
-            className="btn btn-outline-success text-white d-flex align-items-center gap-2"
-            style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
-            disabled={actionLoading || loading}
-            onClick={() => handleAction(pushGit, "Local commits pushed successfully.")}
-          >
-            <FiArrowUp /> Push Commits
-          </button>
-        </div>
-        <div className="ms-auto">
-          <button className="btn btn-outline-secondary border-color text-white d-flex align-items-center gap-2" onClick={handleRefresh} style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
-            <FiRefreshCw className={loading ? 'spin-animation' : ''} /> Refresh Telemetry
-          </button>
-        </div>
-      </div>
-
-      {/* Action result notification message */}
-      {actionMessage && (
-        <div 
-          className={`alert ${actionMessage.type === 'success' ? 'alert-success' : 'alert-danger'} border-0 mb-4 d-flex align-items-center gap-3 text-white`} 
-          style={{ 
-            backgroundColor: actionMessage.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-            border: actionMessage.type === 'success' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)'
-          }}
+      {/* Git CLI Actions */}
+      <div className="git-actions-row">
+        <button 
+          className="git-btn git-btn-fetch"
+          disabled={actionLoading}
+          onClick={() => handleAction(fetchGit, 'Fetch', 'info')}
         >
-          {actionMessage.type === 'success' ? <FiCheckCircle className="text-success" size={24} /> : <FiAlertTriangle className="text-danger" size={24} />}
-          <div>{actionMessage.text}</div>
-        </div>
-      )}
-
-      {/* Error Alert */}
-      {error && (
-        <div className="alert alert-danger border-0 mb-4 d-flex align-items-center gap-3 text-white" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)' }} role="alert">
-          <FiAlertTriangle className="text-danger flex-shrink-0" size={24} />
-          <div>
-            <strong className="d-block text-danger mb-1">Version Control Service Error</strong>
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-3">
-          <div className="github-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Status</span>
-              <FiGithub className="text-primary" size={20} />
-            </div>
-            <div className="d-flex align-items-center mt-1">
-              <span className={`firewall-status-badge ${getStatusBadgeClass(gitData.status)}`}>
-                <span className="dot"></span>
-                {loading ? 'LOADING...' : `${getStatusTextPrefix(gitData.status)}${gitData.status?.toUpperCase()}`}
-              </span>
-            </div>
-            <div className="small text-muted mt-2">Working tree status</div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="github-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Current Branch</span>
-              <FiGitBranch className="text-info" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white text-truncate">{loading ? '...' : (gitData.branch || 'main')}</div>
-            <div className="small text-muted mt-1">Active Git HEAD scope</div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="github-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Commit Count</span>
-              <FiActivity className="text-warning" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white">{loading ? '...' : gitData.commits}</div>
-            <div className="small text-muted mt-1">Total commits in history</div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="github-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Pack Disk Size</span>
-              <FiDatabase className="text-success" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white">{loading ? '...' : (gitData.size || 'N/A')}</div>
-            <div className="small text-muted mt-1">Packfile space on disk</div>
-          </div>
-        </div>
+          <RefreshCw size={14} /> Fetch Remote
+        </button>
+        <button 
+          className="git-btn git-btn-pull"
+          disabled={actionLoading}
+          onClick={() => handleAction(pullGit, 'Pull', 'warning')}
+        >
+          <Download size={14} /> Pull Origin
+        </button>
+        <button 
+          className="git-btn git-btn-push"
+          disabled={actionLoading}
+          onClick={() => handleAction(pushGit, 'Push', 'danger')}
+        >
+          <Upload size={14} /> Push Changes
+        </button>
       </div>
 
       <div className="row g-4 mb-4">
-        {/* Repository details */}
-        <div className="col-lg-12">
-          <div className="github-table-card p-4 h-100">
+        {/* Info panel */}
+        <div className="col-12">
+          <div className="card-base-static p-4 h-100">
             <h5 className="text-white mb-4 d-flex align-items-center gap-2">
-              <FiGithub className="text-primary" /> Repository Dashboard
+              <FiGithub className="text-primary" /> Repository details
             </h5>
             <div className="d-flex flex-column gap-3">
-              <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                <span className="text-secondary">Name:</span>
-                <span className="text-white fw-semibold">{gitData.repository || 'N/A'}</span>
+              <div className="d-flex justify-content-between pb-1 border-bottom border-secondary border-opacity-10">
+                <span className="text-secondary">Repository URL:</span>
+                <a
+                  className="text-primary text-mono small d-inline-flex align-items-center gap-1"
+                  href={gitData.remote}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {gitData.remote}
+                  <ExternalLink size={13} />
+                </a>
               </div>
-              <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                <span className="text-secondary">Git CLI Version:</span>
-                <span className="text-light small">{gitData.git_version || 'N/A'}</span>
-              </div>
-              <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                <span className="text-secondary">Default Branch:</span>
-                <span className="text-light small"><code className="text-secondary">{gitData.default_branch || 'main'}</code></span>
-              </div>
-              <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+              <div className="d-flex justify-content-between pb-1 border-bottom border-secondary border-opacity-10">
                 <span className="text-secondary">Current Branch:</span>
-                <span className="text-white d-flex align-items-center gap-2">
-                  <FiGitBranch className="text-info" /> <code className="text-info">{gitData.branch || 'N/A'}</code>
+                <span className="text-white font-weight-600 d-flex align-items-center gap-1">
+                  <GitBranch size={13} className="text-success" /> {gitData.branch}
                 </span>
               </div>
-              <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                <span className="text-secondary">Remote Origin:</span>
-                <span className="text-secondary text-truncate ms-2" title={gitData.remote} style={{ maxWidth: '65%', fontSize: '0.85rem' }}>
-                  {gitData.remote || 'None'}
+              <div className="d-flex justify-content-between pb-1 border-bottom border-secondary border-opacity-10">
+                <span className="text-secondary">Working status:</span>
+                <span className={`status-badge ${gitData.status?.toLowerCase() === 'clean' ? 'status-badge-success' : 'status-badge-warning'}`}>
+                  {gitData.status}
                 </span>
               </div>
-              <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                <span className="text-secondary">Current HEAD:</span>
-                <span className="text-white d-flex align-items-center gap-2">
-                  <code className="text-warning">{gitData.last_commit?.hash || 'N/A'}</code>
-                  <button 
-                    className="btn btn-link p-0 text-secondary hover-white" 
-                    title="Copy HEAD hash"
-                    onClick={() => copyToClipboard(gitData.current_head || gitData.last_commit?.hash)}
-                  >
-                    <FiCopy size={14} className={copied ? 'text-success' : ''} />
-                  </button>
+              <div className="d-flex justify-content-between pb-1 border-bottom border-secondary border-opacity-10">
+                <span className="text-secondary">Ahead / Behind:</span>
+                <span className="text-light small">
+                  {gitData.ahead} ahead, {gitData.behind} behind
                 </span>
               </div>
-              <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                <span className="text-secondary">Last Remote Fetch:</span>
-                <span className="text-light small">{gitData.last_fetch || 'N/A'}</span>
+              <div className="d-flex justify-content-between pb-1 border-bottom border-secondary border-opacity-10">
+                <span className="text-secondary">Total commit count:</span>
+                <span className="text-white text-mono">{gitData.commit_count ?? gitData.commits ?? 0}</span>
+              </div>
+              <div className="d-flex justify-content-between pb-1 border-bottom border-secondary border-opacity-10">
+                <span className="text-secondary">Pack file size:</span>
+                <span className="text-white text-mono">{gitData.pack_size || gitData.size || 'Unavailable'}</span>
+              </div>
+              <div className="d-flex justify-content-between pb-1 border-bottom border-secondary border-opacity-10">
+                <span className="text-secondary">Git version:</span>
+                <span className="text-white text-mono small">{gitData.git_version}</span>
               </div>
               <div className="d-flex justify-content-between pb-1">
-                <span className="text-secondary">Branch Offset:</span>
-                <span className="text-light small">
-                  {gitData.ahead} ahead, {gitData.behind} behind remote tracker
-                </span>
+                <span className="text-secondary">Last Sync Check:</span>
+                <span className="text-muted small">{gitData.last_fetch || 'Just now'}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row g-4 mb-4">
-        {/* Working Tree Files Status */}
-        <div className="col-lg-6">
-          <div className="github-table-card p-4">
-            <h5 className="text-white mb-3 d-flex align-items-center gap-2">
-              <FiFileText className="text-info" /> Working Tree Files ({gitData.files?.length || 0})
-            </h5>
-            
-            <div className="table-responsive" style={{ maxHeight: '350px', overflowY: 'auto' }}>
-              <table className="github-table">
-                <thead>
-                  <tr>
-                    <th>File Path</th>
-                    <th className="text-end">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan="2"><div className="skeleton-text" /></td>
-                    </tr>
-                  ) : gitData.files && gitData.files.length > 0 ? (
-                    gitData.files.map((file, idx) => (
-                      <tr key={idx}>
-                        <td className="text-white text-break font-monospace" style={{ fontSize: '0.8rem' }}>{file.file}</td>
-                        <td className="text-end">
-                          <span className={`fw-semibold text-capitalize ${getFileStatusClass(file.status)}`}>
-                            {file.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="2" className="text-center py-4 text-secondary">
-                        <FiCheckCircle size={24} className="mb-2 text-success opacity-75" />
-                        <p className="mb-0 fw-medium">No modified or untracked files detected.</p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Commit History (last 5) */}
-        <div className="col-lg-6">
-          <div className="github-table-card p-4">
-            <h5 className="text-white mb-3 d-flex align-items-center gap-2">
-              <FiClock className="text-warning" /> Recent Commits History
-            </h5>
-            
-            <div className="d-flex flex-column gap-3" style={{ maxHeight: '350px', overflowY: 'auto' }}>
-              {loading ? (
-                <div className="skeleton-text" />
-              ) : gitData.recent_commits && gitData.recent_commits.length > 0 ? (
-                gitData.recent_commits.map((commit, idx) => (
-                  <div key={idx} className="p-3 rounded border" style={{ backgroundColor: 'rgba(255,255,255,0.01)', borderColor: 'rgba(255,255,255,0.05)' }}>
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <span className="text-white fw-semibold text-break" style={{ fontSize: '0.9rem' }}>
-                        {commit.message}
-                      </span>
-                      <code 
-                        className="text-warning font-monospace ps-2 cursor-pointer hover-white flex-shrink-0" 
-                        title="Click to copy hash"
-                        onClick={() => copyToClipboard(commit.hash)}
-                        style={{ fontSize: '0.8rem' }}
-                      >
-                        {commit.hash}
-                      </code>
-                    </div>
-                    <div className="d-flex justify-content-between text-secondary small" style={{ fontSize: '0.75rem' }}>
-                      <span className="d-flex align-items-center gap-1">
-                        <FiUser size={12} /> {commit.author}
-                      </span>
-                      <span className="d-flex align-items-center gap-1">
-                        <FiCalendar size={12} /> {commit.date}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-secondary">
-                  <p className="mb-0 fw-medium">No recent commits found.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row g-4">
-        {/* Branches list card */}
-        <div className="col-md-6">
-          <div className="github-table-card p-4">
-            <h5 className="text-white mb-3 d-flex align-items-center gap-2">
-              <FiGitBranch className="text-info" /> Branches ({gitData.branches?.length || 0})
-            </h5>
-            <div className="d-flex flex-wrap gap-2">
-              {loading ? (
-                <div className="skeleton-text short" />
-              ) : gitData.branches && gitData.branches.length > 0 ? (
-                gitData.branches.map((b, idx) => (
-                  <span 
-                    key={idx} 
-                    className={`badge ${b === gitData.branch ? 'bg-primary text-white' : 'bg-dark text-secondary border'}`}
-                    style={{ borderColor: 'rgba(255,255,255,0.05)' }}
-                  >
-                    {b === gitData.branch ? '★ ' : ''}{b}
-                  </span>
-                ))
-              ) : (
-                <span className="text-secondary small">No branches detected.</span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Tags list card */}
-        <div className="col-md-6">
-          <div className="github-table-card p-4">
-            <h5 className="text-white mb-3 d-flex align-items-center gap-2">
-              <FiTag className="text-warning" /> Tags ({gitData.tags?.length || 0})
-            </h5>
-            <div className="d-flex flex-wrap gap-2">
-              {loading ? (
-                <div className="skeleton-text short" />
-              ) : gitData.tags && gitData.tags.length > 0 ? (
-                gitData.tags.map((t, idx) => (
-                  <span 
-                    key={idx} 
-                    className="badge bg-dark text-secondary border"
-                    style={{ borderColor: 'rgba(255,255,255,0.05)' }}
-                  >
-                    {t}
-                  </span>
-                ))
-              ) : (
-                <span className="text-secondary small">No tags configured in this repository.</span>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Commits table */}
+      <div className="card-base-static p-4">
+        <h4 className="text-white font-weight-600 mb-4 d-flex align-items-center gap-2">
+          <Info size={16} className="text-primary" /> Recent Revisions History
+        </h4>
+        <DataTable 
+          columns={columns} 
+          data={recentCommits}
+          pageSize={5}
+          emptyVariant="no-data"
+          emptyMessage="No commit records available in local git history logs."
+        />
       </div>
     </div>
   );

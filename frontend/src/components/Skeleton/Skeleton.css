@@ -1,0 +1,33 @@
+/* ============================================================
+   Skeleton Loading Component Styles
+   ============================================================ */
+
+.skeleton-item {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-overlay) 37%,
+    var(--bg-elevated) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeleton-line {
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-circle {
+  border-radius: var(--radius-full);
+}
+
+.skeleton-chart-bar {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  width: 100%;
+}
+
+.skeleton-card-container,
+.skeleton-table-container,
+.skeleton-chart-container {
+  width: 100%;
+}

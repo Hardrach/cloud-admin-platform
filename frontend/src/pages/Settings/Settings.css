@@ -1,79 +1,60 @@
-/* Settings Page Styles */
+/* ============================================================
+   Settings Page Styles
+   ============================================================ */
 
 .settings-container {
-  padding-bottom: 2rem;
-  animation: settingsFadeIn 0.3s ease-out;
-}
-
-@keyframes settingsFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.settings-header {
-  margin-bottom: 2rem;
-}
-
-.settings-title {
-  font-weight: 700;
-  font-size: 1.75rem;
-  color: var(--text-color);
-  margin-bottom: 0.25rem;
-}
-
-.settings-subtitle {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  padding-bottom: var(--space-8);
 }
 
 /* Settings Section Card */
 .settings-section {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
   overflow: hidden;
-  transition: border-color 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast);
 }
 
 .settings-section:hover {
-  border-color: var(--hover-color);
+  border-color: var(--border-strong);
 }
 
 .settings-section-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .settings-section-icon {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 
 .settings-section-title {
   font-weight: 600;
-  font-size: 1rem;
-  color: var(--text-color);
+  font-size: var(--text-md);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .settings-section-desc {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
   margin: 0;
 }
 
 .settings-section-body {
-  padding: 1.25rem 1.5rem;
+  padding: var(--space-5) var(--space-6);
 }
 
 /* Settings Row (label + value) */
@@ -81,8 +62,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 0;
-  border-bottom: 1px solid rgba(45, 76, 104, 0.3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .settings-row:last-child {
@@ -90,59 +71,59 @@
 }
 
 .settings-row-label {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .settings-row-value {
-  font-size: 0.875rem;
-  color: var(--text-color);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
   font-weight: 500;
   text-align: right;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  max-width: 65%;
+}
+
+.settings-container .col-lg-5 .settings-row,
+.settings-container .col-xl-5 .settings-row {
+  gap: var(--space-4);
 }
 
 /* Toggle Switch */
-.toggle-switch {
+.toggle-switch-custom {
   position: relative;
   width: 44px;
   height: 24px;
-  background-color: var(--border-color);
-  border-radius: 12px;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: background-color 0.25s ease;
-  border: none;
+  transition: all var(--transition-fast);
   padding: 0;
 }
 
-.toggle-switch.active {
-  background-color: var(--primary-color);
+.toggle-switch-custom.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
-.toggle-switch::after {
+.toggle-switch-custom::after {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 2px;
+  left: 2px;
   width: 18px;
   height: 18px;
-  border-radius: 50%;
-  background-color: var(--text-color);
-  transition: transform 0.25s ease;
+  border-radius: var(--radius-full);
+  background-color: var(--text-primary);
+  transition: transform var(--transition-fast);
 }
 
-.toggle-switch.active::after {
+.toggle-switch-custom.active::after {
   transform: translateX(20px);
 }
-
-/* Status indicator dot */
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 6px;
+.toggle-switch-custom.active::after {
+  background-color: var(--color-contrast);
 }
-
-.status-dot.online { background-color: var(--success-color); }
-.status-dot.offline { background-color: var(--danger-color); }

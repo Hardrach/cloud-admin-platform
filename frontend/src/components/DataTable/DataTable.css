@@ -1,0 +1,128 @@
+/* ============================================================
+   DataTable Component Styles
+   ============================================================ */
+
+.datatable-wrapper {
+  width: 100%;
+}
+
+.datatable-filter-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.datatable-search-wrapper {
+  position: relative;
+  max-width: 320px;
+  width: 100%;
+}
+
+.datatable-search-icon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.datatable-search-input {
+  width: 100%;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  transition: all var(--transition-base);
+}
+
+.datatable-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+  background-color: var(--bg-elevated);
+}
+
+.datatable-scrollable {
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface);
+}
+
+.datatable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  text-align: left;
+}
+
+.datatable th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-strong);
+  user-select: none;
+  transition: background-color var(--transition-fast);
+}
+
+.datatable th:hover {
+  background-color: var(--bg-elevated);
+}
+
+.datatable td {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.datatable tr:last-child td {
+  border-bottom: none;
+}
+
+.datatable tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.datatable tbody tr:hover {
+  background-color: var(--bg-elevated);
+}
+
+.sort-icon-wrapper {
+  display: inline-flex;
+  color: var(--color-primary);
+}
+
+.pagination-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+}

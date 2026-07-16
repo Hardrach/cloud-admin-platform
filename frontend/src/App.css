@@ -1,1 +1,14 @@
-/* App.css styles are handled globally by index.css */
+/* ============================================================
+   App-level styles — Page transition container
+   ============================================================ */
+
+/* Page transition wrapper for Framer Motion */
+.page-transition-wrapper {
+  width: 100%;
+  min-height: 100%;
+}
+
+/* Ensure content flows properly within animated containers */
+.page-transition-wrapper > * {
+  animation: slideUp 0.3s ease-out;
+}

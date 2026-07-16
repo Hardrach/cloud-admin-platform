@@ -6,326 +6,212 @@ import {
   runTerraformApply, 
   runTerraformDestroy 
 } from '../../services/api';
+import { useToast } from '../../components/Toast/Toast';
+import { useConfirm } from '../../components/ConfirmDialog/ConfirmDialog';
+import { DataTable } from '../../components/DataTable/DataTable';
+import { SkeletonCard } from '../../components/Skeleton/Skeleton';
+import { EmptyState } from '../../components/EmptyState/EmptyState';
 import { 
-  FiServer, 
-  FiCheckCircle, 
-  FiXCircle, 
-  FiRefreshCw,
-  FiAlertTriangle,
-  FiPlay,
-  FiTerminal,
-  FiFileText,
-  FiTrash2,
-  FiCpu
-} from 'react-icons/fi';
+  Play, 
+  CheckSquare, 
+  Trash2, 
+  Terminal, 
+  Layers, 
+  RefreshCw
+} from 'lucide-react';
 
 const Terraform = () => {
-  const [tfData, setTfData] = useState({ 
-    installed: false, 
-    version: null,
-    files: [],
-    workspace: 'default',
-    resources: [],
-    outputs: {}
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Command Execution State
-  const [actionLoading, setActionLoading] = useState(false);
+  const [stateData, setStateData] = useState(null);
   const [consoleOutput, setConsoleOutput] = useState('');
-  const [showConfirm, setShowConfirm] = useState(null); // 'apply' or 'destroy'
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const toast = useToast();
+  const confirm = useConfirm();
 
-  const fetchTfData = async () => {
+  const fetchTerraformState = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await getTerraform();
-      setTfData(data || { 
-        installed: false, 
-        version: null,
-        files: [],
-        workspace: 'default',
-        resources: [],
-        outputs: {}
+      const resources = data?.resources || data?.resources_list || [];
+      setStateData({
+        ...data,
+        terraform_version: data?.terraform_version || data?.version || (data?.installed ? 'Terraform CLI detected' : 'Project configuration mode'),
+        resources_list: resources.length ? resources : (data?.files || []).map((file) => ({
+          name: file,
+          type: 'terraform.config',
+          provider: 'local workspace'
+        }))
       });
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to load Terraform daemon status.");
+      toast.error("Failed to load Terraform state telemetry.");
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchTfData();
+    fetchTerraformState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    fetchTfData();
-  };
+  const handleAction = async (actionFn, actionName, confirmType = 'warning') => {
+    const isDestroy = actionName === 'Destroy';
+    const approved = await confirm({
+      title: `Terraform ${actionName}`,
+      message: isDestroy 
+        ? `CAUTION: Are you sure you want to run Terraform Destroy? This will tear down all managed infrastructure resources!`
+        : `Are you sure you want to run Terraform ${actionName}?`,
+      type: confirmType,
+      confirmText: `Run ${actionName}`,
+      cancelText: 'Cancel'
+    });
 
-  const executeAction = async (actionFn, actionName) => {
+    if (!approved) return;
+
     try {
       setActionLoading(true);
-      setConsoleOutput(`Running: terraform ${actionName}...\n\n`);
-      setError(null);
+      setConsoleOutput(`[CloudAdmin-Shell] Running terraform ${actionName.toLowerCase()}... \n`);
+      toast.info(`Executing terraform ${actionName.toLowerCase()} stream...`);
       
-      const res = await actionFn();
+      const data = await actionFn();
+      setConsoleOutput(prev => prev + (data.output || 'Success. Zero output returned.'));
       
-      let logs = '';
-      if (res.stdout) logs += res.stdout;
-      if (res.stderr) logs += `\nERROR LOGS:\n${res.stderr}`;
-      
-      setConsoleOutput(logs || `terraform ${actionName} finished with no output logs.`);
-      
-      if (res.success) {
-        await fetchTfData();
+      if (data.status === 'success' || data.success) {
+        toast.success(`Terraform ${actionName} finished successfully.`);
       } else {
-        setError(`Terraform ${actionName} execution failed. Review console logs.`);
+        toast.warning(`Terraform ${actionName} completed with warnings or errors.`);
       }
+      
+      await fetchTerraformState();
     } catch (err) {
       console.error(err);
-      setConsoleOutput(prev => prev + `\nFATAL EXCEPTION: ${err.message}`);
-      setError(err.response?.data?.detail || err.message || `Failed to execute terraform ${actionName}.`);
+      setConsoleOutput(prev => prev + `\nError: Command failed to execute correctly.\n${err.message || ''}`);
+      toast.error(`Terraform ${actionName} failed.`);
     } finally {
       setActionLoading(false);
-      setShowConfirm(null);
     }
   };
 
+  const columns = [
+    {
+      key: 'name',
+      label: 'Resource Identifier Name',
+      sortable: true,
+      render: (val) => <span className="text-white font-weight-600">{val}</span>
+    },
+    {
+      key: 'type',
+      label: 'Provider Resource Type',
+      sortable: true,
+      render: (val) => <code className="small text-secondary">{val}</code>
+    },
+    {
+      key: 'provider',
+      label: 'Provider Namespace',
+      render: (val) => <span className="small text-muted">{val || 'registry.terraform.io'}</span>
+    }
+  ];
+
+  if (loading) {
+    return (
+      <div className="container-fluid p-0">
+        <div className="page-header">
+          <h1 className="page-title">Terraform Deployments</h1>
+          <p className="page-subtitle">Inspect local state allocations and execute IaC orchestration pipelines</p>
+        </div>
+        <SkeletonCard rows={8} />
+      </div>
+    );
+  }
+
+  // Parse resources list mapped from api. If terraform is absent, stateData might represent mock structure
+  const isTerraformAvailable = Boolean(stateData?.terraform_version || stateData?.files?.length || stateData?.resources_list?.length);
+  const resourcesList = stateData?.resources_list || [];
+
+  if (!isTerraformAvailable) {
+    return (
+      <div className="container-fluid p-0">
+        <div className="page-header">
+          <h1 className="page-title">Terraform Deployments</h1>
+          <p className="page-subtitle">Inspect local state allocations and execute IaC orchestration pipelines</p>
+        </div>
+        <EmptyState variant="terraform-absent" onActionClick={fetchTerraformState} actionText="Retry CLI check" />
+      </div>
+    );
+  }
+
   return (
-    <div className={`terraform-container ${isRefreshing ? 'refresh-animate' : ''}`}>
+    <div className="terraform-container">
       {/* Header */}
-      <div className="terraform-header-toolbar mb-3">
-        <div>
-          <h1 className="terraform-title">Terraform</h1>
-          <p className="terraform-subtitle">Monitor HashiCorp Infrastructure as Code deployment configurations</p>
-        </div>
+      <div className="page-header">
+        <h1 className="page-title">Terraform Deployments</h1>
+        <p className="page-subtitle">Inspect local state allocations and execute IaC orchestration pipelines</p>
       </div>
 
-      {/* Toolbar */}
-      <div className="terraform-actions-row mb-4">
-        <div className="d-flex gap-2 flex-wrap">
-          <button 
-            className="btn btn-primary d-flex align-items-center gap-2"
-            disabled={actionLoading || loading || !tfData.installed}
-            onClick={() => executeAction(runTerraformPlan, 'plan')}
-          >
-            <FiPlay /> Plan Changes
-          </button>
-          <button 
-            className="btn btn-outline-success text-white d-flex align-items-center gap-2"
-            style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
-            disabled={actionLoading || loading || !tfData.installed}
-            onClick={() => setShowConfirm('apply')}
-          >
-            <FiCheckCircle /> Apply Config
-          </button>
-          <button 
-            className="btn btn-outline-danger text-white d-flex align-items-center gap-2"
-            style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
-            disabled={actionLoading || loading || !tfData.installed}
-            onClick={() => setShowConfirm('destroy')}
-          >
-            <FiTrash2 /> Destroy Stack
-          </button>
-        </div>
-        <div className="ms-auto">
-          <button className="btn btn-outline-secondary border-color text-white d-flex align-items-center gap-2" onClick={handleRefresh} style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
-            <FiRefreshCw className={loading ? 'spin-animation' : ''} /> Refresh Telemetry
-          </button>
-        </div>
+      {/* Action Pipeline Control Group */}
+      <div className="tf-action-btn-group">
+        <button 
+          className="tf-btn tf-btn-plan"
+          disabled={actionLoading}
+          onClick={() => handleAction(runTerraformPlan, 'Plan', 'info')}
+        >
+          <Play size={14} /> Plan Changes
+        </button>
+        <button 
+          className="tf-btn tf-btn-apply"
+          disabled={actionLoading}
+          onClick={() => handleAction(runTerraformApply, 'Apply', 'warning')}
+        >
+          <CheckSquare size={14} /> Apply Infrastructure
+        </button>
+        <button 
+          className="tf-btn tf-btn-destroy"
+          disabled={actionLoading}
+          onClick={() => handleAction(runTerraformDestroy, 'Destroy', 'danger')}
+        >
+          <Trash2 size={14} /> Destroy All
+        </button>
       </div>
 
-      {/* Confirmation Dialog Modal */}
-      {showConfirm && (
-        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center z-3" style={{ backgroundColor: 'rgba(7, 17, 31, 0.8)' }}>
-          <div className="p-4 rounded border text-center" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', maxWidth: '400px' }}>
-            <FiAlertTriangle className="text-warning mb-3" size={40} />
-            <h5 className="text-white mb-2">Confirm Terraform {showConfirm.toUpperCase()}</h5>
-            <p className="text-secondary small mb-4">
-              Are you sure you want to execute this action? 
-              {showConfirm === 'destroy' && ' This will completely delete all managed cloud infrastructure resources.'}
-            </p>
-            <div className="d-flex gap-2 justify-content-center">
+      <div className="row g-4 mb-4">
+        {/* Resource inventory */}
+        <div className="col-lg-8">
+          <div className="card-base-static p-4 h-100">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div className="d-flex align-items-center gap-2">
+                <Layers size={16} className="text-primary" />
+                <h4 className="m-0 text-white font-weight-600">Active State Resources ({resourcesList.length})</h4>
+              </div>
               <button 
-                className={`btn ${showConfirm === 'destroy' ? 'btn-danger' : 'btn-success'}`}
-                onClick={() => {
-                  if (showConfirm === 'apply') executeAction(runTerraformApply, 'apply');
-                  if (showConfirm === 'destroy') executeAction(runTerraformDestroy, 'destroy');
-                }}
+                className="btn btn-outline-secondary btn-sm text-white border-color" 
+                onClick={fetchTerraformState}
               >
-                Confirm {showConfirm.toUpperCase()}
-              </button>
-              <button 
-                className="btn btn-outline-secondary"
-                onClick={() => setShowConfirm(null)}
-              >
-                Cancel
+                <RefreshCw size={12} className="me-1" /> Reload State
               </button>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Error Alert */}
-      {error && (
-        <div className="alert alert-danger border-0 mb-4 d-flex align-items-center gap-3 text-white" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)' }} role="alert">
-          <FiAlertTriangle className="text-danger flex-shrink-0" size={24} />
-          <div>
-            <strong className="d-block text-danger mb-1">Terraform Service Error</strong>
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-3">
-          <div className="tf-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Installation Status</span>
-              <FiServer className="text-primary" size={20} />
-            </div>
-            <div className="d-flex align-items-center mt-2">
-              {loading ? (
-                <span className="text-white">...</span>
-              ) : tfData.installed ? (
-                <span className="badge bg-success-soft text-success px-2 py-1" style={{ border: '1px solid currentColor', fontSize: '0.75rem' }}>
-                  🟢 INSTALLED
-                </span>
-              ) : (
-                <span className="badge bg-danger-soft text-danger px-2 py-1" style={{ border: '1px solid currentColor', fontSize: '0.75rem' }}>
-                  🔴 NOT INSTALLED
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="tf-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Version</span>
-              <FiServer className="text-info" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white">{loading ? '...' : (tfData.version || 'N/A')}</div>
-            <div className="small text-muted mt-1">Binary revision number</div>
-          </div>
-        </div>
-        <div className="col-md-2">
-          <div className="tf-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Config Files</span>
-              <FiFileText className="text-warning" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white">{loading ? '...' : `${tfData.files?.length || 0} files`}</div>
-            <div className="small text-muted mt-1">Active code templates</div>
-          </div>
-        </div>
-        <div className="col-md-2">
-          <div className="tf-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">State Resources</span>
-              <FiCpu className="text-danger" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white">{loading ? '...' : `${tfData.resources?.length || 0} items`}</div>
-            <div className="small text-muted mt-1">Tracked active stack</div>
-          </div>
-        </div>
-        <div className="col-md-2">
-          <div className="tf-stat-card p-3 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="text-secondary small font-medium">Workspace</span>
-              <FiServer className="text-success" size={20} />
-            </div>
-            <div className="fs-5 fw-bold text-white text-truncate">{loading ? '...' : (tfData.workspace || 'default')}</div>
-            <div className="small text-muted mt-1">Active workspace scope</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row g-4">
-        {/* State resources and files */}
-        <div className="col-lg-5">
-          <div className="github-table-card p-4 mb-4">
-            <h5 className="text-white mb-3 d-flex align-items-center gap-2">
-              <FiFileText className="text-primary" /> Configuration Files
-            </h5>
-            <div className="table-responsive" style={{ maxHeight: '180px', overflowY: 'auto' }}>
-              <table className="github-table">
-                <thead>
-                  <tr>
-                    <th>Filename</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td><div className="skeleton-text" /></td></tr>
-                  ) : tfData.files && tfData.files.length > 0 ? (
-                    tfData.files.map((file, idx) => (
-                      <tr key={idx}>
-                        <td className="font-monospace text-white" style={{ fontSize: '0.85rem' }}>{file}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr><td className="text-secondary text-center">No .tf config blocks found.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="github-table-card p-4">
-            <h5 className="text-white mb-3 d-flex align-items-center gap-2">
-              <FiCpu className="text-danger" /> State Resources List ({tfData.resources?.length || 0})
-            </h5>
-            <div className="table-responsive" style={{ maxHeight: '280px', overflowY: 'auto' }}>
-              <table className="github-table">
-                <thead>
-                  <tr>
-                    <th>Resource Address</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td><div className="skeleton-text" /></td></tr>
-                  ) : tfData.resources && tfData.resources.length > 0 ? (
-                    tfData.resources.map((res, idx) => (
-                      <tr key={idx}>
-                        <td className="font-monospace text-light" style={{ fontSize: '0.8rem' }}>{res}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr><td className="text-secondary text-center">No active state tracked resources.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <DataTable 
+              columns={columns} 
+              data={resourcesList}
+              pageSize={5}
+              emptyVariant="no-data"
+              emptyMessage="No resources are mapped inside the local state backend file."
+            />
           </div>
         </div>
 
-        {/* Console logs */}
-        <div className="col-lg-7">
-          <div className="github-table-card p-4 h-100 d-flex flex-column" style={{ minHeight: '450px' }}>
-            <h5 className="text-white mb-3 d-flex align-items-center gap-2">
-              <FiTerminal className="text-info" /> Execution Live Output Console
-            </h5>
-            <pre 
-              className="bg-dark p-3 rounded text-break font-monospace flex-grow-1 mb-0" 
-              style={{ 
-                color: '#76ff03', 
-                backgroundColor: 'rgba(0, 0, 0, 0.45)', 
-                border: '1px solid var(--border-color)',
-                fontSize: '0.85rem',
-                overflowY: 'auto',
-                maxHeight: '450px'
-              }}
-            >
-              {consoleOutput || 'Console idle. Trigger an action (Plan, Apply, Destroy) to stream logs...'}
+        {/* Console outputs */}
+        <div className="col-lg-4">
+          <div className="terraform-console-panel h-100">
+            <div className="terraform-console-header">
+              <div className="d-flex align-items-center gap-2">
+                <Terminal size={14} className="text-primary" />
+                <span className="small text-secondary fw-semibold">terraform_stdout.log</span>
+              </div>
+            </div>
+            <pre className="terraform-terminal">
+              {consoleOutput || 'Standard input shell ready. Execute an orchestration action above to display log outputs...'}
             </pre>
           </div>
         </div>

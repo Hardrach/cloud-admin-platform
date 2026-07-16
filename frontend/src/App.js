@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import VirtualMachines from './pages/VirtualMachines/VirtualMachines';
@@ -16,7 +16,8 @@ import DockerCompose from './pages/DockerCompose/DockerCompose';
 import GitHub from './pages/GitHub/GitHub';
 import Settings from './pages/Settings/Settings';
 import Profile from './pages/Profile/Profile';
-import { FiCpu, FiPlayCircle, FiTerminal, FiGlobe, FiDatabase, FiActivity, FiLock, FiCode } from 'react-icons/fi';
+import LoadingScreen from './components/LoadingScreen/LoadingScreen';
+import { Cpu, Server, Terminal, Globe, Database, Activity, Lock, Code } from 'lucide-react';
 
 function App() {
   const [activeItem, setActiveItem] = useState({
@@ -26,6 +27,15 @@ function App() {
   });
 
   const [isLightTheme, setIsLightTheme] = useState(document.body.classList.contains('light-theme'));
+  const [appInitializing, setAppInitializing] = useState(true);
+
+  // Initial load branded screen simulation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppInitializing(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleGlobalTheme = () => {
     if (document.body.classList.contains('light-theme')) {
@@ -37,26 +47,29 @@ function App() {
     }
   };
 
-  // Simple icon selector based on active item to make the placeholder look neat
   const getActiveIcon = () => {
     switch (activeItem.id) {
-      case 'dashboard': return <FiCpu className="welcome-logo" />;
-      case 'vm': return <FiPlayCircle className="welcome-logo" style={{ color: 'var(--primary-color)' }} />;
+      case 'dashboard': return <Cpu className="welcome-logo" size={48} />;
+      case 'vm': return <Server className="welcome-logo text-primary" size={48} />;
       case 'docker':
-      case 'compose': return <FiTerminal className="welcome-logo" style={{ color: 'var(--secondary-color)' }} />;
-      case 'networks': return <FiGlobe className="welcome-logo" style={{ color: 'var(--success-color)' }} />;
-      case 'storage': return <FiDatabase className="welcome-logo" style={{ color: 'var(--warning-color)' }} />;
+      case 'compose': return <Terminal className="welcome-logo text-success" size={48} />;
+      case 'networks': return <Globe className="welcome-logo text-primary" size={48} />;
+      case 'storage': return <Database className="welcome-logo text-warning" size={48} />;
       case 'metrics':
       case 'logs':
-      case 'alerts': return <FiActivity className="welcome-logo" style={{ color: 'var(--warning-color)' }} />;
+      case 'alerts': return <Activity className="welcome-logo text-warning" size={48} />;
       case 'firewall':
       case 'ssh':
-      case 'iam': return <FiLock className="welcome-logo" style={{ color: 'var(--danger-color)' }} />;
+      case 'iam': return <Lock className="welcome-logo text-danger" size={48} />;
       case 'terraform':
-      case 'github': return <FiCode className="welcome-logo" style={{ color: 'var(--primary-color)' }} />;
-      default: return <FiCpu className="welcome-logo" />;
+      case 'github': return <Code className="welcome-logo text-primary" size={48} />;
+      default: return <Cpu className="welcome-logo" size={48} />;
     }
   };
+
+  if (appInitializing) {
+    return <LoadingScreen message="Initializing cloud administration console..." />;
+  }
 
   return (
     <Layout activeItem={activeItem} setActiveItem={setActiveItem} isLightTheme={isLightTheme} toggleGlobalTheme={toggleGlobalTheme}>
@@ -98,7 +111,7 @@ function App() {
           <div className="d-flex justify-content-center">
             {getActiveIcon()}
           </div>
-          <h1 className="welcome-title">Welcome to Cloud Admin Platform</h1>
+          <h1 className="welcome-title mt-4">Welcome to Cloud Admin Platform</h1>
           <p className="welcome-subtitle">
             This content container is currently empty. The system shell will render the selected {activeItem.name} view here.
           </p>

@@ -1,7 +1,22 @@
-import React from 'react';
-import { FiSearch, FiBell, FiMenu, FiChevronRight, FiGrid } from 'react-icons/fi';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Bell, Menu, ChevronRight, Grid, Sun, Moon } from 'lucide-react';
 
 const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggleGlobalTheme }) => {
+  const [searchVal, setSearchVal] = useState('');
+  const searchInputRef = useRef(null);
+
+  // Focus search with ⌘K or Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <nav className="top-navbar">
       <div className="navbar-left">
@@ -11,7 +26,7 @@ const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggl
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           aria-label="Toggle Navigation Menu"
         >
-          <FiMenu />
+          <Menu size={20} />
         </button>
 
         {/* Title visible on desktop */}
@@ -22,18 +37,18 @@ const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggl
         {/* Breadcrumb section */}
         <div className="breadcrumb-nav d-none d-md-flex ms-3">
           <div className="breadcrumb-item">
-            <FiGrid className="me-1" size={13} />
+            <Grid className="me-1" size={13} />
             <span>Console</span>
           </div>
           {activeItem.group && (
             <>
-              <div className="breadcrumb-separator"><FiChevronRight size={12} /></div>
+              <div className="breadcrumb-separator"><ChevronRight size={12} /></div>
               <div className="breadcrumb-item">
                 <span>{activeItem.group}</span>
               </div>
             </>
           )}
-          <div className="breadcrumb-separator"><FiChevronRight size={12} /></div>
+          <div className="breadcrumb-separator"><ChevronRight size={12} /></div>
           <div className="breadcrumb-item active">
             <span>{activeItem.name}</span>
           </div>
@@ -43,10 +58,13 @@ const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggl
       {/* Search area */}
       <div className="navbar-center">
         <div className="search-box-wrapper">
-          <FiSearch className="search-icon" size={15} />
+          <Search className="search-icon" size={15} />
           <input 
+            ref={searchInputRef}
             type="text" 
-            placeholder="Search resources, services, and docs (e.g. vm-prod-01)..." 
+            placeholder="Search console (e.g. vm-prod-01)                 Ctrl+K" 
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
             className="search-input"
             id="global-search-input"
           />
@@ -55,18 +73,29 @@ const Navbar = ({ activeItem, setIsMobileOpen, isMobileOpen, isLightTheme, toggl
 
       {/* Actions, indicators, avatar */}
       <div className="navbar-right">
-        {/* Theme badge toggle button */}
-        <span 
-          className="theme-badge d-none d-sm-inline-block" 
+        {/* Theme toggle control */}
+        <button 
+          className="nav-action-btn d-none d-sm-flex align-items-center gap-1 theme-toggle-btn"
           onClick={toggleGlobalTheme}
-          style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+          style={{ border: '1px solid var(--border-default)', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}
+          title={isLightTheme ? "Switch to Dark Mode" : "Switch to Light Mode"}
         >
-          {isLightTheme ? '☀️ LIGHT MODE' : '🌙 DARK MODE'}
-        </span>
+          {isLightTheme ? (
+            <>
+              <Sun size={14} className="text-warning" />
+              <span className="small text-secondary" style={{ fontSize: '11px', fontWeight: 600 }}>LIGHT</span>
+            </>
+          ) : (
+            <>
+              <Moon size={14} className="text-primary" />
+              <span className="small text-secondary" style={{ fontSize: '11px', fontWeight: 600 }}>DARK</span>
+            </>
+          )}
+        </button>
 
         {/* Notifications */}
         <button className="nav-action-btn" aria-label="Notifications" id="notifications-btn">
-          <FiBell size={18} />
+          <Bell size={18} />
           <span className="badge-dot"></span>
         </button>
 
