@@ -1,36 +1,21 @@
+<!-- Header animated banner (no & in desc to avoid SVG XML error) -->
+![header](https://capsule-render.vercel.app/api?type=waving&color=0:00D4FF,100:8B5CF6&height=200&section=header&text=Cloud%20Admin%20Platform&fontSize=48&fontAlignY=40&fontColor=ffffff&desc=Enterprise%20DevOps%20and%20Cloud%20Management%20Dashboard&descAlignY=62&descSize=18&animation=fadeIn)
+
 <div align="center">
 
-<!-- Animated Header Banner -->
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:00D4FF,100:8B5CF6&amp;height=200&amp;section=header&amp;text=Cloud%20Admin%20Platform&amp;fontSize=48&amp;fontAlignY=40&amp;fontColor=ffffff&amp;desc=Enterprise%20DevOps%20%26%20Cloud%20Management%20Dashboard&amp;descAlignY=62&amp;descSize=18&amp;animation=fadeIn" />
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=0B1220)](https://reactjs.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.12-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
+[![Azure](https://img.shields.io/badge/Microsoft-Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com)
+[![Terraform](https://img.shields.io/badge/Terraform-IaC-844FBA?style=for-the-badge&logo=terraform&logoColor=white)](https://terraform.io)
 
-<!-- Status Badges Row 1 -->
-<p>
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&amp;logo=react&amp;logoColor=0B1220" />
-  <img src="https://img.shields.io/badge/FastAPI-Python%203.12-009688?style=for-the-badge&amp;logo=fastapi&amp;logoColor=white" />
-  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&amp;logo=docker&amp;logoColor=white" />
-  <img src="https://img.shields.io/badge/Microsoft-Azure-0078D4?style=for-the-badge&amp;logo=microsoftazure&amp;logoColor=white" />
-  <img src="https://img.shields.io/badge/Terraform-IaC-844FBA?style=for-the-badge&amp;logo=terraform&amp;logoColor=white" />
-</p>
+![Status](https://img.shields.io/badge/Status-Production%20Ready-34D399?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-8B5CF6?style=flat-square)
+![Build](https://img.shields.io/badge/Build-Passing-00D4FF?style=flat-square&logo=github-actions&logoColor=white)
+![Design](https://img.shields.io/badge/Design-Enterprise%20SaaS-FBBF24?style=flat-square)
+![Endpoints](https://img.shields.io/badge/API%20Endpoints-27-F87171?style=flat-square)
 
-<!-- Status Badges Row 2 -->
-<p>
-  <img src="https://img.shields.io/badge/Status-Production%20Ready-34D399?style=flat-square&amp;logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-8B5CF6?style=flat-square" />
-  <img src="https://img.shields.io/badge/Build-Passing-00D4FF?style=flat-square&amp;logo=github-actions&amp;logoColor=white" />
-  <img src="https://img.shields.io/badge/Design-Enterprise%20SaaS-FBBF24?style=flat-square" />
-  <img src="https://img.shields.io/badge/API%20Endpoints-27-F87171?style=flat-square" />
-</p>
-
-<!-- Navigation -->
-<p>
-  <a href="#-overview">Overview</a> •
-  <a href="#-features">Features</a> •
-  <a href="#-architecture">Architecture</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-api-reference">API</a> •
-  <a href="#-roadmap">Roadmap</a>
-</p>
+**[Overview](#-overview)** • **[Features](#-features)** • **[Architecture](#-architecture)** • **[Tech Stack](#-tech-stack)** • **[Quick Start](#-quick-start)** • **[API](#-api-reference)** • **[Roadmap](#-roadmap)**
 
 </div>
 
@@ -38,18 +23,11 @@
 
 ## ✦ Overview
 
-<table>
-<tr>
-<td>
-
 **Cloud Admin Platform** is a production-grade, full-stack **DevOps administration dashboard** that connects a polished React SaaS frontend to a Python FastAPI backend reading **live data** from Linux, Docker, Git, Terraform, Azure CLI, UFW, SSH and real system metrics.
 
 Built as a **Final Year DevOps Engineering Portfolio Project**, this platform demonstrates mastery of the complete cloud-native engineering stack — from infrastructure provisioning to frontend UX.
 
 > **Every operational page is API-driven. No static mock data. Real system sources only.**
-
-</td>
-<td width="300px">
 
 ```
 🌐 Frontend  →  React 19 SaaS UI
@@ -70,15 +48,9 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 └──────────────────────┘
 ```
 
-</td>
-</tr>
-</table>
-
 ---
 
 ## ✦ Project Highlights
-
-<div align="center">
 
 | Area | What CloudAdmin Provides |
 |:---:|:---|
@@ -89,8 +61,6 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 | 🔧 **DevOps** | Git status, Terraform state, Docker Compose stack |
 | 🎨 **UX** | Dark/light mode, micro-animations, skeletons, toasts |
 | 🚀 **Deployment** | Docker Compose, Vercel, Nginx, DuckDNS, HTTPS |
-
-</div>
 
 ---
 
@@ -207,7 +177,7 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 </details>
 
 <details>
-<summary><b>🎨 UX & Design System</b></summary>
+<summary><b>🎨 UX and Design System</b></summary>
 <br>
 
 - **Dark Mode** — Deep navy palette with Electric Cyan accents
@@ -273,52 +243,48 @@ git commit + git push
        │           └──► Azure VM pulls latest backend
        │                       │
        │                       ▼
-       │              docker compose up -d --build
-       │                       │
-       │                       ▼
-       └──────────── FastAPI running inside container
+       └──────────── docker compose up -d --build
 ```
 
 ---
 
 ## ✦ Tech Stack
 
-<div align="center">
-
 ### Frontend
+
 | Technology | Role |
 |:---:|:---|
-| ![React](https://img.shields.io/badge/-React%2019-61DAFB?style=flat&logo=react&logoColor=black) | SPA framework, component model |
-| ![Framer Motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?style=flat&logo=framer&logoColor=white) | Page transitions & micro-animations |
-| ![Recharts](https://img.shields.io/badge/-Recharts-FF6384?style=flat) | Area charts and metric visualizations |
-| ![Lucide](https://img.shields.io/badge/-Lucide%20React-000000?style=flat&logo=lucide&logoColor=white) | Icon system |
-| ![Axios](https://img.shields.io/badge/-Axios-5A29E4?style=flat&logo=axios&logoColor=white) | REST API calls |
+| [![React](https://img.shields.io/badge/-React%2019-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org) | SPA framework, component model |
+| [![Framer Motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?style=flat&logo=framer&logoColor=white)](https://framer.com/motion) | Page transitions and micro-animations |
+| [![Recharts](https://img.shields.io/badge/-Recharts-FF6384?style=flat)](https://recharts.org) | Area charts and metric visualizations |
+| [![Lucide](https://img.shields.io/badge/-Lucide%20React-000000?style=flat&logo=lucide&logoColor=white)](https://lucide.dev) | Icon system |
+| [![Axios](https://img.shields.io/badge/-Axios-5A29E4?style=flat&logo=axios&logoColor=white)](https://axios-http.com) | REST API calls |
 | CSS Variables | 50+ global design tokens, dark/light themes |
 
 ### Backend
+
 | Technology | Role |
 |:---:|:---|
-| ![FastAPI](https://img.shields.io/badge/-FastAPI-009688?style=flat&logo=fastapi&logoColor=white) | REST API framework |
-| ![Python](https://img.shields.io/badge/-Python%203.12-3776AB?style=flat&logo=python&logoColor=white) | Runtime |
-| ![psutil](https://img.shields.io/badge/-psutil-3776AB?style=flat) | System metrics (CPU, RAM, disk, net) |
+| [![FastAPI](https://img.shields.io/badge/-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) | REST API framework |
+| [![Python](https://img.shields.io/badge/-Python%203.12-3776AB?style=flat&logo=python&logoColor=white)](https://python.org) | Runtime |
+| psutil | System metrics (CPU, RAM, disk, net) |
 | Docker SDK | Container management |
 | Azure CLI | VM lifecycle management |
 | Terraform CLI | IaC state and workspace |
 | Git CLI | Repository metadata and operations |
 | UFW | Firewall rule inspection |
 
-### Infrastructure & DevOps
+### Infrastructure and DevOps
+
 | Technology | Role |
 |:---:|:---|
-| ![Docker](https://img.shields.io/badge/-Docker-2496ED?style=flat&logo=docker&logoColor=white) | Container runtime |
-| ![Azure](https://img.shields.io/badge/-Azure%20VM-0078D4?style=flat&logo=microsoftazure&logoColor=white) | Cloud hosting |
-| ![Nginx](https://img.shields.io/badge/-Nginx-009639?style=flat&logo=nginx&logoColor=white) | Reverse proxy & HTTPS |
-| ![Vercel](https://img.shields.io/badge/-Vercel-000000?style=flat&logo=vercel&logoColor=white) | Frontend hosting |
-| ![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat&logo=github&logoColor=white) | Source control & CI delivery |
+| [![Docker](https://img.shields.io/badge/-Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com) | Container runtime |
+| [![Azure](https://img.shields.io/badge/-Azure%20VM-0078D4?style=flat&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com) | Cloud hosting |
+| [![Nginx](https://img.shields.io/badge/-Nginx-009639?style=flat&logo=nginx&logoColor=white)](https://nginx.org) | Reverse proxy and HTTPS |
+| [![Vercel](https://img.shields.io/badge/-Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com) | Frontend hosting |
+| [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com) | Source control and CI delivery |
 | DuckDNS | Dynamic DNS for HTTPS domain |
 | Let's Encrypt | Free TLS certificate |
-
-</div>
 
 ---
 
@@ -327,19 +293,19 @@ git commit + git push
 ```
 cloud-admin-platform/
 ├── backend/
-│   ├── main.py              # FastAPI app — 27 endpoints, 2000+ lines
+│   ├── main.py              # FastAPI app — 27 endpoints
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
 │   ├── public/
 │   └── src/
 │       ├── components/
-│       │   ├── Layout/      # Sidebar, Navbar, Footer
-│       │   ├── Toast/       # Notification system
+│       │   ├── Layout/          # Sidebar, Navbar, Footer
+│       │   ├── Toast/           # Notification system
 │       │   ├── ConfirmDialog/   # Action confirmation overlays
-│       │   ├── DataTable/   # Sortable, filterable, paginated tables
-│       │   ├── Skeleton/    # Shimmer loading states
-│       │   ├── EmptyState/  # Zero-data fallback components
+│       │   ├── DataTable/       # Sortable, filterable, paginated tables
+│       │   ├── Skeleton/        # Shimmer loading states
+│       │   ├── EmptyState/      # Zero-data fallback components
 │       │   └── LoadingScreen/   # Brand splash screen
 │       ├── pages/
 │       │   ├── Dashboard/
@@ -359,7 +325,7 @@ cloud-admin-platform/
 │       │   ├── Settings/
 │       │   └── Profile/
 │       └── services/
-│           └── api.js       # Centralized Axios service layer
+│           └── api.js           # Centralized Axios service layer
 ├── docker-compose.yml
 ├── reports/
 └── README.md
@@ -383,18 +349,14 @@ az --version      # Azure CLI
 terraform -v      # Terraform CLI
 ```
 
----
-
-### 1 · Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Hardrach/cloud-admin-platform.git
 cd cloud-admin-platform
 ```
 
----
-
-### 2 · Start the Backend (local)
+### 2. Start the Backend (local)
 
 ```bash
 cd backend
@@ -406,12 +368,10 @@ Verify:
 
 ```bash
 curl http://localhost:8000/health
-# → {"status":"ok","platform":"...","python":"..."}
+# { "status": "ok", "platform": "...", "python": "..." }
 ```
 
----
-
-### 3 · Start the Frontend (local)
+### 3. Start the Frontend (local)
 
 ```bash
 cd frontend
@@ -421,9 +381,7 @@ npm start
 
 Open: **http://localhost:3000**
 
----
-
-### 4 · Docker Compose (full stack)
+### 4. Docker Compose (full stack)
 
 ```bash
 # Start everything
@@ -449,8 +407,6 @@ REACT_APP_API_URL=http://localhost:8000
 # Azure VM production
 REACT_APP_API_URL=https://cloudadminyassine.duckdns.org
 ```
-
-> The frontend reads this variable at build time via `create-react-app`.
 
 ---
 
@@ -615,14 +571,6 @@ A complete technical report is available in `reports/`:
 reports/Cloud_Admin_Platform_Rapport_Stage_Modele_Final.docx
 ```
 
-Includes:
-- Architecture diagrams
-- API reference tables
-- Technology stack analysis
-- Screenshots and UI walkthroughs
-- Code samples and system integrations
-- Conclusion and future development roadmap
-
 ---
 
 ## ✦ Author
@@ -645,10 +593,10 @@ This project is released under the **MIT License** — free to use, modify and d
 
 ---
 
+![footer](https://capsule-render.vercel.app/api?type=waving&color=0:8B5CF6,100:00D4FF&height=100&section=footer&animation=fadeIn)
+
 <div align="center">
 
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:8B5CF6,100:00D4FF&amp;height=100&amp;section=footer&amp;animation=fadeIn" />
-
-*Built with ⚡ FastAPI · ⚛️ React · 🐳 Docker · ☁️ Azure*
+*Built with FastAPI · React · Docker · Azure*
 
 </div>
