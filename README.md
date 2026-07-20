@@ -1,22 +1,22 @@
 <div align="center">
 
 <!-- Animated Header Banner -->
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:00D4FF,100:8B5CF6&height=200&section=header&text=Cloud%20Admin%20Platform&fontSize=48&fontAlignY=40&fontColor=ffffff&desc=Enterprise%20DevOps%20%26%20Cloud%20Management%20Dashboard&descAlignY=62&descSize=18&animation=fadeIn" />
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:00D4FF,100:8B5CF6&amp;height=200&amp;section=header&amp;text=Cloud%20Admin%20Platform&amp;fontSize=48&amp;fontAlignY=40&amp;fontColor=ffffff&amp;desc=Enterprise%20DevOps%20%26%20Cloud%20Management%20Dashboard&amp;descAlignY=62&amp;descSize=18&amp;animation=fadeIn" />
 
 <!-- Status Badges Row 1 -->
 <p>
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=0B1220" />
-  <img src="https://img.shields.io/badge/FastAPI-Python%203.12-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Microsoft-Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white" />
-  <img src="https://img.shields.io/badge/Terraform-IaC-844FBA?style=for-the-badge&logo=terraform&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&amp;logo=react&amp;logoColor=0B1220" />
+  <img src="https://img.shields.io/badge/FastAPI-Python%203.12-009688?style=for-the-badge&amp;logo=fastapi&amp;logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&amp;logo=docker&amp;logoColor=white" />
+  <img src="https://img.shields.io/badge/Microsoft-Azure-0078D4?style=for-the-badge&amp;logo=microsoftazure&amp;logoColor=white" />
+  <img src="https://img.shields.io/badge/Terraform-IaC-844FBA?style=for-the-badge&amp;logo=terraform&amp;logoColor=white" />
 </p>
 
 <!-- Status Badges Row 2 -->
 <p>
-  <img src="https://img.shields.io/badge/Status-Production%20Ready-34D399?style=flat-square&logoColor=white" />
+  <img src="https://img.shields.io/badge/Status-Production%20Ready-34D399?style=flat-square&amp;logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-8B5CF6?style=flat-square" />
-  <img src="https://img.shields.io/badge/Build-Passing-00D4FF?style=flat-square&logo=github-actions&logoColor=white" />
+  <img src="https://img.shields.io/badge/Build-Passing-00D4FF?style=flat-square&amp;logo=github-actions&amp;logoColor=white" />
   <img src="https://img.shields.io/badge/Design-Enterprise%20SaaS-FBBF24?style=flat-square" />
   <img src="https://img.shields.io/badge/API%20Endpoints-27-F87171?style=flat-square" />
 </p>
@@ -647,7 +647,7 @@ This project is released under the **MIT License** — free to use, modify and d
 
 <div align="center">
 
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:8B5CF6,100:00D4FF&height=100&section=footer&animation=fadeIn" />
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:8B5CF6,100:00D4FF&amp;height=100&amp;section=footer&amp;animation=fadeIn" />
 
 *Built with ⚡ FastAPI · ⚛️ React · 🐳 Docker · ☁️ Azure*
 
