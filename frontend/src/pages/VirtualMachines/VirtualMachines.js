@@ -38,21 +38,24 @@ const VirtualMachines = () => {
       setVm(nextVm || null);
     } catch (err) {
       console.error(err);
-      // Fallback VM structure when backend API host is powered off
-      setVm({
-        id: 1,
-        name: 'vm-cloud-admin',
-        status: 'Stopped',
-        os: 'Ubuntu 24.04 LTS',
-        region: 'Poland Central',
-        public_ip: '20.215.68.150',
-        private_ip: '10.10.1.4',
-        size: 'Standard_D2s_v3',
-        cpu: 0,
-        memory: 0,
-        disk: 0
+      // Preserve Starting status if user initiated a Start sequence
+      setVm(prev => {
+        const currentStatus = prev?.status;
+        const isStarting = currentStatus === 'Starting' || currentStatus === 'Booting';
+        return {
+          id: 1,
+          name: 'vm-cloud-admin',
+          status: isStarting ? 'Starting' : 'Stopped',
+          os: 'Ubuntu 24.04 LTS',
+          region: 'Poland Central',
+          public_ip: '20.215.68.150',
+          private_ip: '10.10.1.4',
+          size: 'Standard_D2s_v3',
+          cpu: 0,
+          memory: 0,
+          disk: 0
+        };
       });
-      toast.warning("Backend API host is offline. Showing cached VM status (Stopped).");
     } finally {
       setLoading(false);
     }
