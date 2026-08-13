@@ -1,4 +1,4 @@
-<!-- Header animated banner (no & in desc to avoid SVG XML error) -->
+<!-- Header animated banner -->
 ![header](https://capsule-render.vercel.app/api?type=waving&color=0:00D4FF,100:8B5CF6&height=200&section=header&text=Cloud%20Admin%20Platform&fontSize=48&fontAlignY=40&fontColor=ffffff&desc=Enterprise%20DevOps%20and%20Cloud%20Management%20Dashboard&descAlignY=62&descSize=18&animation=fadeIn)
 
 <div align="center">
@@ -7,15 +7,17 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.12-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![Azure](https://img.shields.io/badge/Microsoft-Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com)
+[![Vercel](https://img.shields.io/badge/Vercel-Serverless-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-844FBA?style=for-the-badge&logo=terraform&logoColor=white)](https://terraform.io)
 
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-34D399?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-8B5CF6?style=flat-square)
 ![Build](https://img.shields.io/badge/Build-Passing-00D4FF?style=flat-square&logo=github-actions&logoColor=white)
 ![Design](https://img.shields.io/badge/Design-Enterprise%20SaaS-FBBF24?style=flat-square)
-![Endpoints](https://img.shields.io/badge/API%20Endpoints-27-F87171?style=flat-square)
+![Endpoints](https://img.shields.io/badge/API%20Endpoints-29-F87171?style=flat-square)
+![Multi-Tenant](https://img.shields.io/badge/Multi--Tenant-Ready-34D399?style=flat-square)
 
-**[Overview](#-overview)** • **[Features](#-features)** • **[Architecture](#-architecture)** • **[Tech Stack](#-tech-stack)** • **[Quick Start](#-quick-start)** • **[API](#-api-reference)** • **[Roadmap](#-roadmap)**
+**[Overview](#-overview)** • **[Features](#-features)** • **[Architecture](#-architecture)** • **[Tech Stack](#-tech-stack)** • **[Quick Start](#-quick-start)** • **[Multi-Tenant Setup](#-multi-tenant-enterprise-setup)** • **[API](#-api-reference)** • **[Roadmap](#-roadmap)**
 
 </div>
 
@@ -29,14 +31,16 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 
 > **Every operational page is API-driven. No static mock data. Real system sources only.**
 
+> **Multi-Tenant Ready** — Any enterprise can deploy this platform and connect it to their own Azure subscription via a simple Settings UI — no code changes required.
+
 ```
-🌐 Frontend  →  React 19 SaaS UI
+🌐 Frontend  →  React 19 SPA (Vercel Edge CDN)
        ↓
 🔄 Axios     →  REST API calls
        ↓
-🔒 Nginx     →  HTTPS reverse proxy
+🔒 Nginx     →  HTTPS reverse proxy (Let's Encrypt)
        ↓
-⚡ FastAPI   →  Live data backend
+⚡ FastAPI   →  Live data backend (Azure VM)
        ↓
 ┌──────────────────────┐
 │  🐧 Linux / psutil   │
@@ -46,21 +50,25 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 │  🔑 Git CLI          │
 │  🛡  UFW Firewall    │
 └──────────────────────┘
+
+🚀 Vercel Serverless  →  /api/start-vm  (24/7 VM power-on when host is offline)
 ```
 
 ---
 
 ## ✦ Project Highlights
 
-| Area | What CloudAdmin Provides |
+| Area | What Cloud Admin Provides |
 |:---:|:---|
-| 🖥️ **Infrastructure** | Azure VM status, region, IPs and full lifecycle actions |
+| 🖥️ **Infrastructure** | Azure VM status, region, IPs, full lifecycle (Start/Stop/Restart/Deallocate) |
 | 🐳 **Containers** | Docker inventory, status, ports, logs, start/stop/restart |
 | 📊 **Monitoring** | CPU, memory, disk, swap, load average, disk IO, network |
 | 🛡️ **Security** | UFW firewall rules, SSH keys, Linux IAM users |
 | 🔧 **DevOps** | Git status, Terraform state, Docker Compose stack |
-| 🎨 **UX** | Dark/light mode, micro-animations, skeletons, toasts |
-| 🚀 **Deployment** | Docker Compose, Vercel, Nginx, DuckDNS, HTTPS |
+| ☁️ **Serverless** | Vercel Serverless Function for 24/7 VM Start when host is powered off |
+| 🏢 **Multi-Tenant** | Dynamic Azure credential configuration via Settings UI |
+| 🎨 **UX** | Dark/light mode, micro-animations, skeletons, toasts, confirmation dialogs |
+| 🚀 **Deployment** | Docker Compose, Vercel, Nginx, DuckDNS, HTTPS, Azure Service Principal |
 
 ---
 
@@ -88,7 +96,10 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 - VM status, region, public/private IP
 - Instance size and OS profile
 - **Start**, **Stop**, **Restart** and **Deallocate** actions with confirmation dialogs
-- Real-time status badge (Running / Stopped / Deallocated)
+- Real-time status badge (Running / Starting / Stopped / Deallocated)
+- **Serverless VM Start** — when the host VM is powered off, the Start button triggers a Vercel Serverless Function (`/api/start-vm`) that authenticates with Azure OAuth and powers on the VM directly from the browser
+- **Smart boot sequence** — UI preserves `Starting` status during Azure VM boot (~60s) using a `useRef` lock, preventing premature fallback to `Stopped`
+- Automatic polling until VM reaches `Running` state with success toast notification
 
 </details>
 
@@ -177,6 +188,23 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 </details>
 
 <details>
+<summary><b>⚙️ Settings (Multi-Tenant Azure Configuration)</b></summary>
+<br>
+
+- **Azure Cloud Subscription & Service Principal** configuration form
+- Dynamic input fields: Subscription ID, Tenant ID, Client ID, Client Secret, Resource Group, VM Name
+- Client Secret is masked with `••••••••` and toggled via eye icon for security
+- **Save & Verify Connection** button that:
+  1. Saves credentials to a local encrypted config file (`azure_config.json`)
+  2. Sets environment variables for the running process
+  3. Tests `az login --service-principal` and reports success/failure in real-time
+- Enables any enterprise to plug in their own Azure subscription without code changes
+- Theme settings: Dark / Light / Auto mode toggle
+- Platform identity and metadata display
+
+</details>
+
+<details>
 <summary><b>🎨 UX and Design System</b></summary>
 <br>
 
@@ -202,17 +230,17 @@ Built as a **Final Year DevOps Engineering Portfolio Project**, this platform de
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        User Browser                             │
-│                    localhost:3000 / Vercel                      │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │  React 19 SPA
-                          │  Axios REST calls
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    Nginx Reverse Proxy                          │
-│              DuckDNS HTTPS  |  Let's Encrypt SSL               │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-                          ▼
+│             cloud-admin-platform.vercel.app                     │
+└────────────────┬────────────────────────┬───────────────────────┘
+                 │  React 19 SPA          │
+                 │  Axios REST calls      │  Vercel Serverless
+                 ▼                        ▼
+┌─────────────────────────┐  ┌─────────────────────────────────┐
+│     Nginx (HTTPS)       │  │  /api/start-vm (Node.js)        │
+│  DuckDNS + Let's Encrypt│  │  Azure OAuth → VM Start         │
+└────────────┬────────────┘  │  Works 24/7 when VM is offline  │
+             │               └─────────────────────────────────┘
+             ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                FastAPI Backend  :8000                           │
 │                  Azure VM  |  Docker Container                  │
@@ -238,12 +266,31 @@ git commit + git push
        │
        ├──► GitHub Repository
        │           │
-       │           ├──► Vercel auto-builds React frontend
+       │           ├──► Vercel auto-builds React frontend + Serverless Functions
        │           │
        │           └──► Azure VM pulls latest backend
        │                       │
        │                       ▼
        └──────────── docker compose up -d --build
+```
+
+### VM Start Flow (When Host is Powered Off)
+
+```
+User clicks [▷ Start]
+       │
+       ▼
+React tries backend API → ERR_NETWORK (host offline)
+       │
+       ▼
+Fallback: POST /api/start-vm  (Vercel Serverless Function)
+       │
+       ├── 1. OAuth token from login.microsoftonline.com
+       ├── 2. POST management.azure.com/.../start
+       └── 3. Azure powers on the VM (202 Accepted)
+       │
+       ▼
+UI shows ● Starting → polls every 15s → ● Running ✅
 ```
 
 ---
@@ -279,12 +326,13 @@ git commit + git push
 | Technology | Role |
 |:---:|:---|
 | [![Docker](https://img.shields.io/badge/-Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com) | Container runtime |
-| [![Azure](https://img.shields.io/badge/-Azure%20VM-0078D4?style=flat&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com) | Cloud hosting |
+| [![Azure](https://img.shields.io/badge/-Azure%20VM-0078D4?style=flat&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com) | Cloud hosting (Standard_D2s_v3, Poland Central) |
+| [![Vercel](https://img.shields.io/badge/-Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com) | Frontend hosting + Serverless Functions |
 | [![Nginx](https://img.shields.io/badge/-Nginx-009639?style=flat&logo=nginx&logoColor=white)](https://nginx.org) | Reverse proxy and HTTPS |
-| [![Vercel](https://img.shields.io/badge/-Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com) | Frontend hosting |
 | [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com) | Source control and CI delivery |
 | DuckDNS | Dynamic DNS for HTTPS domain |
 | Let's Encrypt | Free TLS certificate |
+| Azure Service Principal | Automated authentication (client_credentials flow) |
 
 ---
 
@@ -292,24 +340,30 @@ git commit + git push
 
 ```
 cloud-admin-platform/
+├── api/
+│   └── start-vm.js              # Vercel Serverless Function (Azure VM Start)
 ├── backend/
-│   ├── main.py              # FastAPI app — 27 endpoints
+│   ├── main.py                  # FastAPI app — 29 endpoints
+│   ├── azure_config.json        # Dynamic Azure credentials (auto-generated)
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
+│   ├── api/
+│   │   └── start-vm.js          # Vercel Serverless Function (alternative path)
 │   ├── public/
+│   │   └── index.html
 │   └── src/
 │       ├── components/
-│       │   ├── Layout/          # Sidebar, Navbar, Footer
-│       │   ├── Toast/           # Notification system
-│       │   ├── ConfirmDialog/   # Action confirmation overlays
-│       │   ├── DataTable/       # Sortable, filterable, paginated tables
-│       │   ├── Skeleton/        # Shimmer loading states
-│       │   ├── EmptyState/      # Zero-data fallback components
-│       │   └── LoadingScreen/   # Brand splash screen
+│       │   ├── Layout/            # Sidebar, Navbar, Footer
+│       │   ├── Toast/             # Notification system
+│       │   ├── ConfirmDialog/     # Action confirmation overlays
+│       │   ├── DataTable/         # Sortable, filterable, paginated tables
+│       │   ├── Skeleton/          # Shimmer loading states
+│       │   ├── EmptyState/        # Zero-data fallback components
+│       │   └── LoadingScreen/     # Brand splash screen
 │       ├── pages/
 │       │   ├── Dashboard/
-│       │   ├── VirtualMachines/
+│       │   ├── VirtualMachines/   # Azure VM management + Serverless Start
 │       │   ├── DockerContainers/
 │       │   ├── Networks/
 │       │   ├── Storage/
@@ -322,12 +376,17 @@ cloud-admin-platform/
 │       │   ├── Terraform/
 │       │   ├── DockerCompose/
 │       │   ├── GitHub/
-│       │   ├── Settings/
+│       │   ├── Settings/          # Azure multi-tenant configuration
 │       │   └── Profile/
 │       └── services/
-│           └── api.js           # Centralized Axios service layer
-├── docker-compose.yml
+│           └── api.js             # Centralized Axios service layer
+├── infrastructure/
+│   └── azure-functions/           # Azure Functions (StartVMFunction)
+├── monitoring/
+├── docs/
 ├── reports/
+├── docker-compose.yml
+├── .env
 └── README.md
 ```
 
@@ -368,7 +427,7 @@ Verify:
 
 ```bash
 curl http://localhost:8000/health
-# { "status": "ok", "platform": "...", "python": "..." }
+# { "status": "healthy" }
 ```
 
 ### 3. Start the Frontend (local)
@@ -396,15 +455,67 @@ docker compose down
 
 ---
 
+## ✦ Multi-Tenant Enterprise Setup
+
+Cloud Admin Platform is designed to be **multi-tenant ready**. Any enterprise can deploy this platform and connect it to their own Azure infrastructure.
+
+### Step 1: Create an Azure Service Principal
+
+```bash
+az ad sp create-for-rbac \
+  --name "cloud-admin-app" \
+  --role "Virtual Machine Contributor" \
+  --scopes /subscriptions/<YOUR_SUBSCRIPTION_ID>/resourceGroups/<YOUR_RG>
+```
+
+This outputs your `appId` (Client ID), `password` (Client Secret), and `tenant`.
+
+### Step 2: Configure via Settings UI
+
+1. Navigate to **Settings** in the sidebar
+2. Fill in the **Azure Cloud Subscription & Service Principal** form:
+   - Subscription ID
+   - Tenant ID (Directory ID)
+   - Client ID (Application ID)
+   - Client Secret
+   - Resource Group Name
+   - Virtual Machine Name
+3. Click **Save & Verify Connection**
+4. A green success banner confirms Azure authentication ✅
+
+### Step 3: Configure Vercel Environment Variables
+
+For the Serverless VM Start function (powers on VM when host is offline), set these in your Vercel Project → Settings → Environment Variables:
+
+| Variable | Value |
+|:---|:---|
+| `REACT_APP_API_URL` | `https://your-domain.duckdns.org` |
+| `AZURE_CLIENT_ID` | Your Service Principal App ID |
+| `AZURE_CLIENT_SECRET` | Your Service Principal Secret |
+| `AZURE_TENANT_ID` | Your Azure AD Tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Your Azure Subscription ID |
+| `REACT_APP_AZURE_CLIENT_SECRET` | Same as `AZURE_CLIENT_SECRET` |
+
+---
+
 ## ✦ Environment Variables
 
-Create a `.env` file inside the `frontend/` directory:
+### Backend `.env`
+
+```env
+AZURE_CLIENT_ID=your-client-id
+AZURE_CLIENT_SECRET=your-client-secret
+AZURE_TENANT_ID=your-tenant-id
+AZURE_SUBSCRIPTION_ID=your-subscription-id
+```
+
+### Frontend `.env`
 
 ```env
 # Local development
 REACT_APP_API_URL=http://localhost:8000
 
-# Azure VM production
+# Production (Azure VM)
 REACT_APP_API_URL=https://cloudadminyassine.duckdns.org
 ```
 
@@ -425,6 +536,27 @@ REACT_APP_API_URL=https://cloudadminyassine.duckdns.org
 | `POST` | `/api/vms/{name}/stop` | Stop virtual machine |
 | `POST` | `/api/vms/{name}/restart` | Restart virtual machine |
 | `POST` | `/api/vms/{name}/deallocate` | Deallocate virtual machine |
+
+</details>
+
+<details>
+<summary><b>☁️ Azure Configuration Endpoints</b></summary>
+<br>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `GET` | `/api/azure-config` | Get current Azure config (secret masked) |
+| `POST` | `/api/azure-config` | Save new Azure credentials & test login |
+
+</details>
+
+<details>
+<summary><b>🚀 Vercel Serverless Endpoints</b></summary>
+<br>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `POST` | `/api/start-vm` | Start Azure VM via OAuth (works when host is offline) |
 
 </details>
 
@@ -499,7 +631,7 @@ Internet
 DuckDNS → cloudadminyassine.duckdns.org
     │
     ▼
-Azure VM (Ubuntu 24.04 LTS)
+Azure VM (Ubuntu 24.04 LTS — Standard D2s v3 — Poland Central)
     │
     ├── Nginx (port 80/443)
     │       │   Let's Encrypt TLS
@@ -510,7 +642,8 @@ Azure VM (Ubuntu 24.04 LTS)
             └── postgres-db   (PostgreSQL :5432)
 
 Frontend → Vercel (Edge CDN)
-    REACT_APP_API_URL → https://cloudadminyassine.duckdns.org
+    ├── REACT_APP_API_URL → https://cloudadminyassine.duckdns.org
+    └── /api/start-vm     → Vercel Serverless Function (Node.js)
 ```
 
 ---
@@ -519,16 +652,19 @@ Frontend → Vercel (Edge CDN)
 
 > ⚠️ This platform exposes live infrastructure actions. Always secure before public production use.
 
-| Area | Recommended Action |
-|:---|:---|
-| 🔐 Authentication | Add JWT Bearer token authentication |
-| 👥 Authorization | Implement role-based access control (RBAC) |
-| 🔒 CORS | Restrict to explicit frontend origin only |
-| 📝 Audit | Add audit log trail for all destructive actions |
-| 🔑 Secrets | Store all keys/tokens in environment variables |
-| 🚦 Rate Limiting | Add request throttling on action endpoints |
-| 🐳 Docker Socket | Restrict Docker socket permissions |
-| 🛡️ Headers | Configure security headers via Nginx |
+| Area | Status | Details |
+|:---|:---:|:---|
+| 🔐 Authentication | 🔜 | JWT Bearer token authentication (planned) |
+| 👥 Authorization | 🔜 | Role-based access control — RBAC (planned) |
+| 🔒 CORS | ✅ | Restricted to explicit frontend origins |
+| 🔑 Service Principal | ✅ | Azure SP with minimal `VM Contributor` role |
+| 🛡️ Secret Masking | ✅ | Client secrets are masked in API responses |
+| 📁 Config Security | ✅ | `azure_config.json` excluded from Git via `.gitignore` |
+| 🔑 Vercel Env Vars | ✅ | Secrets stored as Vercel environment variables |
+| 📝 Audit | 🔜 | Audit log trail for destructive actions (planned) |
+| 🚦 Rate Limiting | 🔜 | Request throttling on action endpoints (planned) |
+| 🐳 Docker Socket | ⚠️ | Restrict Docker socket permissions in production |
+| 🛡️ Headers | ✅ | Security headers configured via Nginx |
 
 ---
 
@@ -536,12 +672,16 @@ Frontend → Vercel (Edge CDN)
 
 ```
 Phase 1 — Core Platform ✅
-├── [x] 27 REST API endpoints
+├── [x] 29 REST API endpoints
 ├── [x] 16 frontend pages
 ├── [x] Enterprise design system (dark + light mode)
 ├── [x] Docker Compose deployment
-├── [x] HTTPS via Nginx + DuckDNS
-└── [x] Live Azure VM deployment
+├── [x] HTTPS via Nginx + DuckDNS + Let's Encrypt
+├── [x] Live Azure VM deployment
+├── [x] Azure Service Principal auto-login
+├── [x] Vercel Serverless VM Start Function
+├── [x] Multi-tenant Azure Settings UI
+└── [x] Smart VM boot state management (isBootingRef)
 
 Phase 2 — Security Layer 🔜
 ├── [ ] JWT authentication
@@ -597,6 +737,6 @@ This project is released under the **MIT License** — free to use, modify and d
 
 <div align="center">
 
-*Built with FastAPI · React · Docker · Azure*
+*Built with FastAPI · React · Docker · Azure · Vercel Serverless*
 
 </div>
