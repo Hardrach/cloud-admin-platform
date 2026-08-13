@@ -1,13 +1,11 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // CORS Headers
-  if (res && res.setHeader) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
-    return res ? res.status(200).end() : new Response(null, { status: 200 });
+    return res.status(200).end();
   }
 
   const AZURE_TENANT_ID = process.env.AZURE_TENANT_ID || "0aa23530-bf26-4354-9ec0-1c612fead745";
@@ -56,21 +54,18 @@ export default async function handler(req, res) {
       throw new Error(`Azure Start API Error: ${errText}`);
     }
 
-    const payload = {
+    return res.status(200).json({
       success: true,
       via: "vercel_serverless_function",
       message: `Vercel Serverless Function successfully triggered Start for Azure VM '${vmName}'. The VM will be Running in 1-2 minutes.`
-    };
-
-    return res && res.status ? res.status(200).json(payload) : new Response(JSON.stringify(payload), { status: 200 });
+    });
 
   } catch (error) {
     console.error("Vercel Serverless Start Error:", error);
-    const errPayload = {
+    return res.status(500).json({
       success: false,
       error: error.message,
       message: "Failed to trigger Azure VM Start via Vercel Serverless Function."
-    };
-    return res && res.status ? res.status(500).json(errPayload) : new Response(JSON.stringify(errPayload), { status: 500 });
+    });
   }
-}
+};
