@@ -342,7 +342,8 @@ def get_dashboard() -> dict:
     if status and "instanceView" in status and "statuses" in status["instanceView"]:
         for s in status["instanceView"]["statuses"]:
             if s.get("code", "").startswith("PowerState"):
-                current_vm_status = s.get("displayStatus", vm_status)
+                raw_st = s.get("displayStatus", vm_status)
+                current_vm_status = raw_st.replace("VM ", "").strip() if raw_st else vm_status
 
     # 2. Retrieve real Docker count if running, otherwise use fallback
     docker_count = 2
@@ -454,7 +455,8 @@ def get_vms() -> list:
         power_state = "Unknown"
         for s in status["instanceView"]["statuses"]:
             if s.get("code", "").startswith("PowerState"):
-                power_state = s.get("displayStatus", "Unknown")
+                raw_st = s.get("displayStatus", "Unknown")
+                power_state = raw_st.replace("VM ", "").strip() if raw_st else "Unknown"
 
         return [{
             "id": 1,

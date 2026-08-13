@@ -78,7 +78,12 @@ const VirtualMachines = () => {
       setTimeout(() => fetchVM(), 2000);
     } catch (err) {
       console.error(err);
-      toast.error(`Failed to ${actionName.toLowerCase()} the VM: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
+      const isNetError = err.message?.includes('Network Error') || err.code === 'ERR_NETWORK' || !err.response;
+      if (isNetError && (actionName === 'Stop' || actionName === 'Deallocate')) {
+        toast.info(`VM ${actionName.toLowerCase()} command dispatched. Host server connection closed as Azure powers off the VM.`);
+      } else {
+        toast.error(`Failed to ${actionName.toLowerCase()} the VM: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
+      }
     } finally {
       setActionLoading(false);
     }

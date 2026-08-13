@@ -168,7 +168,7 @@ const Dashboard = () => {
     {
       id: 'vms',
       label: 'Running Virtual Machines',
-      value: vmStatus === 'Running' || vmStatus === 'running' || vmStatus === 'Healthy' ? '1 / 1' : '0 / 1',
+      value: vmStatus.toLowerCase().includes('running') || vmStatus === 'Healthy' ? '1 / 1' : '0 / 1',
       trend: vmName,
       icon: <Server size={18} />,
       iconColorClass: 'stat-icon-blue',
