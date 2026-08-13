@@ -26,21 +26,49 @@ export const getVirtualMachines = async () => {
   return response.data;
 };
 
+const AZURE_TENANT_ID = process.env.REACT_APP_AZURE_TENANT_ID || "0aa23530-bf26-4354-9ec0-1c612fead745";
+const AZURE_CLIENT_ID = process.env.REACT_APP_AZURE_CLIENT_ID || "0a2303db-54ae-4801-888c-473dcae9cadb";
+const AZURE_CLIENT_SECRET = process.env.REACT_APP_AZURE_CLIENT_SECRET || "";
+const AZURE_SUBSCRIPTION_ID = process.env.REACT_APP_AZURE_SUBSCRIPTION_ID || "d9ed69ab-886c-40cc-b8b6-0efa4e1049ba";
+const AZURE_RESOURCE_GROUP = process.env.REACT_APP_AZURE_RESOURCE_GROUP || "rg-cloud-admin-platform";
+
+export const startAzureVMDirectly = async (vmName = "vm-cloud-admin") => {
+  const tokenUrl = `https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token`;
+  const params = new URLSearchParams();
+  params.append("grant_type", "client_credentials");
+  params.append("client_id", AZURE_CLIENT_ID);
+  params.append("client_secret", AZURE_CLIENT_SECRET);
+  params.append("scope", "https://management.azure.com/.default");
+
+  const tokenRes = await axios.post(tokenUrl, params, {
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  });
+
+  const accessToken = tokenRes.data.access_token;
+  const azureApiUrl = `https://management.azure.com/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Compute/virtualMachines/${vmName}/start?api-version=2023-09-01`;
+
+  const azureRes = await axios.post(azureApiUrl, {}, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  return {
+    success: true,
+    via: "azure_rest_api",
+    message: `Azure REST API successfully triggered Start for VM '${vmName}'.`
+  };
+};
+
 export const startVirtualMachine = async (name) => {
-  const SERVERLESS_URL = process.env.REACT_APP_SERVERLESS_START_URL;
   try {
-    return await api.post(`/api/vms/${name}/start`, {}, { timeout: 15000 });
+    return await api.post(`/api/vms/${name}/start`, {}, { timeout: 8000 });
   } catch (err) {
     const isOffline = err.code === 'ERR_NETWORK' || err.message?.includes('timeout') || !err.response;
-    if (isOffline && SERVERLESS_URL) {
-      console.warn("Backend API offline — invoking Azure Serverless Start Function...");
-      const serverlessRes = await axios.post(SERVERLESS_URL, { name }, { timeout: 15000 });
-      return serverlessRes.data;
-    }
     if (isOffline) {
-      const offlineErr = new Error("HOST_OFFLINE");
-      offlineErr.code = "HOST_OFFLINE";
-      throw offlineErr;
+      console.warn("Backend API offline — triggering Azure REST API Start directly...");
+      return await startAzureVMDirectly(name);
     }
     throw err;
   }
