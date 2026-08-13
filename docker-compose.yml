@@ -39,7 +39,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/workspace
       # Mount host Azure credentials so the container is already authenticated
-      - ${USERPROFILE}/.azure:/root/.azure
+      - ${HOME:-${USERPROFILE}}/.azure:/root/.azure
 
 volumes:
   postgres_data:
