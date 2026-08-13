@@ -64,12 +64,15 @@ const VirtualMachines = () => {
       setActionLoading(true);
       toast.info(`Sending ${actionName.toLowerCase()} command to Azure...`);
       const res = await actionFn(vm.name);
-      const msg = res?.data?.message || res?.message || '';
-      const isFallback = msg.toLowerCase().includes('fallback');
+      const resData = res?.data || res;
+      const via = resData?.via;
+      const msg = resData?.message || '';
+      const isFallback = via === 'fallback' || msg.toLowerCase().includes('fallback');
+
       if (isFallback) {
-        toast.warning(`Azure CLI unavailable on backend — action queued locally. The VM state may not have changed in Azure.`);
+        toast.warning(msg || `Azure CLI unavailable on backend — action queued locally.`);
       } else {
-        toast.success(`VM ${actionName.toLowerCase()} command sent to Azure successfully.`);
+        toast.success(msg || `VM ${actionName.toLowerCase()} command sent to Azure successfully.`);
       }
       // Wait 2s before refreshing to let Azure propagate state
       setTimeout(() => fetchVM(), 2000);
