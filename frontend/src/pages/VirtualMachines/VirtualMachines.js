@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './VirtualMachines.css';
 import { 
   getVirtualMachines, 
@@ -29,23 +29,32 @@ const VirtualMachines = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const toast = useToast();
   const confirm = useConfirm();
+  // Ref flag: true during Azure VM boot phase so fetchVM cannot overwrite 'Starting' status
+  const isBootingRef = useRef(false);
 
   const fetchVM = async () => {
+    // During Azure VM boot, don't overwrite the 'Starting' status with 'Stopped'
+    if (isBootingRef.current) {
+      console.log('VM is booting — skipping fetchVM status overwrite.');
+      return;
+    }
     try {
       setLoading(true);
       const data = await getVirtualMachines();
       const nextVm = Array.isArray(data) ? data[0] : data?.vm || data;
+      // If backend reports Running, clear booting flag
+      if (nextVm?.status?.toLowerCase().includes('running')) {
+        isBootingRef.current = false;
+      }
       setVm(nextVm || null);
     } catch (err) {
       console.error(err);
-      // Preserve Starting status if user initiated a Start sequence
-      setVm(prev => {
-        const currentStatus = prev?.status;
-        const isStarting = currentStatus === 'Starting' || currentStatus === 'Booting';
-        return {
+      // Only set Stopped if we are NOT in a boot sequence
+      if (!isBootingRef.current) {
+        setVm({
           id: 1,
           name: 'vm-cloud-admin',
-          status: isStarting ? 'Starting' : 'Stopped',
+          status: 'Stopped',
           os: 'Ubuntu 24.04 LTS',
           region: 'Poland Central',
           public_ip: '20.215.68.150',
@@ -54,8 +63,8 @@ const VirtualMachines = () => {
           cpu: 0,
           memory: 0,
           disk: 0
-        };
-      });
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -81,7 +90,10 @@ const VirtualMachines = () => {
       setActionLoading(true);
       toast.info(`Sending ${actionName.toLowerCase()} command to Azure...`);
       // Optimistically update VM status in local state for instant UI feedback
-      if (actionName === 'Start') setVm(prev => prev ? { ...prev, status: 'Starting' } : prev);
+      if (actionName === 'Start') {
+        isBootingRef.current = true; // Lock status during Azure boot
+        setVm(prev => prev ? { ...prev, status: 'Starting' } : prev);
+      }
       if (actionName === 'Stop') setVm(prev => prev ? { ...prev, status: 'Stopped' } : prev);
       if (actionName === 'Restart') setVm(prev => prev ? { ...prev, status: 'Restarting' } : prev);
       if (actionName === 'Deallocate') setVm(prev => prev ? { ...prev, status: 'Deallocated' } : prev);
@@ -98,9 +110,36 @@ const VirtualMachines = () => {
         toast.success(msg || `VM ${actionName.toLowerCase()} command sent to Azure successfully.`);
       }
 
-      // If starting, wait 15s before refreshing so host OS has time to boot up
-      const delay = actionName === 'Start' ? 15000 : 3000;
-      setTimeout(() => fetchVM(), delay);
+      // For Start: poll every 15s until VM is Running (max 10 min), then clear booting lock
+      if (actionName === 'Start') {
+        let attempts = 0;
+        const maxAttempts = 40; // 40 × 15s = 10 min max
+        const pollUntilRunning = () => {
+          attempts++;
+          if (attempts > maxAttempts) {
+            isBootingRef.current = false;
+            return;
+          }
+          getVirtualMachines()
+            .then(data => {
+              const nextVm = Array.isArray(data) ? data[0] : data?.vm || data;
+              if (nextVm?.status?.toLowerCase().includes('running')) {
+                isBootingRef.current = false;
+                setVm(nextVm);
+                toast.success('VM is now Running! ✅');
+              } else {
+                setTimeout(pollUntilRunning, 15000);
+              }
+            })
+            .catch(() => {
+              // Backend still booting — retry
+              setTimeout(pollUntilRunning, 15000);
+            });
+        };
+        setTimeout(pollUntilRunning, 15000);
+      } else {
+        setTimeout(() => fetchVM(), 3000);
+      }
     } catch (err) {
       console.error(err);
       const isNetError = err.message?.includes('Network Error') || err.code === 'ERR_NETWORK' || !err.response;
