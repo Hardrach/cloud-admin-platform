@@ -7,7 +7,6 @@ import {
   Info,
   Globe,
   Key,
-  ShieldCheck,
   Save,
   CheckCircle2,
   AlertCircle,
