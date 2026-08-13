@@ -27,19 +27,19 @@ export const getVirtualMachines = async () => {
 };
 
 export const startVirtualMachine = async (name) => {
-  return api.post(`/api/vms/${name}/start`);
+  return api.post(`/api/vms/${name}/start`, {}, { timeout: 30000 });
 };
 
 export const stopVirtualMachine = async (name) => {
-  return api.post(`/api/vms/${name}/stop`);
+  return api.post(`/api/vms/${name}/stop`, {}, { timeout: 30000 });
 };
 
 export const restartVirtualMachine = async (name) => {
-  return api.post(`/api/vms/${name}/restart`);
+  return api.post(`/api/vms/${name}/restart`, {}, { timeout: 30000 });
 };
 
 export const deallocateVirtualMachine = async (name) => {
-  return api.post(`/api/vms/${name}/deallocate`);
+  return api.post(`/api/vms/${name}/deallocate`, {}, { timeout: 30000 });
 };
 
 export const getDocker = async () => {

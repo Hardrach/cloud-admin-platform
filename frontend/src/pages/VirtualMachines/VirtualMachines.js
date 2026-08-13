@@ -63,6 +63,12 @@ const VirtualMachines = () => {
     try {
       setActionLoading(true);
       toast.info(`Sending ${actionName.toLowerCase()} command to Azure...`);
+      // Optimistically update VM status in local state for instant UI feedback
+      if (actionName === 'Start') setVm(prev => prev ? { ...prev, status: 'Starting' } : prev);
+      if (actionName === 'Stop') setVm(prev => prev ? { ...prev, status: 'Stopped' } : prev);
+      if (actionName === 'Restart') setVm(prev => prev ? { ...prev, status: 'Restarting' } : prev);
+      if (actionName === 'Deallocate') setVm(prev => prev ? { ...prev, status: 'Deallocated' } : prev);
+
       const res = await actionFn(vm.name);
       const resData = res?.data || res;
       const via = resData?.via;
@@ -74,12 +80,13 @@ const VirtualMachines = () => {
       } else {
         toast.success(msg || `VM ${actionName.toLowerCase()} command sent to Azure successfully.`);
       }
-      // Wait 2s before refreshing to let Azure propagate state
-      setTimeout(() => fetchVM(), 2000);
+      // Wait 3s before refreshing to let Azure propagate state
+      setTimeout(() => fetchVM(), 3000);
     } catch (err) {
       console.error(err);
       const isNetError = err.message?.includes('Network Error') || err.code === 'ERR_NETWORK' || !err.response;
       if (isNetError && (actionName === 'Stop' || actionName === 'Deallocate')) {
+        setVm(prev => prev ? { ...prev, status: actionName === 'Stop' ? 'Stopped' : 'Deallocated' } : prev);
         toast.info(`VM ${actionName.toLowerCase()} command dispatched. Host server connection closed as Azure powers off the VM.`);
       } else {
         toast.error(`Failed to ${actionName.toLowerCase()} the VM: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
