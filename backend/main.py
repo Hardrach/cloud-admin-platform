@@ -321,6 +321,114 @@ def health() -> dict:
     return {"status": "healthy"}
 
 # ============================================================
+# Azure Configuration Endpoints (Multi-Tenant Enterprise Settings)
+# ============================================================
+class AzureConfigUpdate(BaseModel):
+    subscription_id: str
+    tenant_id: str
+    client_id: str
+    client_secret: typing.Optional[str] = None
+    resource_group: str = "rg-cloud-admin-platform"
+    vm_name: str = "vm-cloud-admin"
+
+AZURE_CONFIG_FILE = os.path.join(os.path.dirname(__file__), "azure_config.json")
+
+def load_azure_config() -> dict:
+    """Load local Azure config or fallback to environment variables."""
+    if os.path.exists(AZURE_CONFIG_FILE):
+        try:
+            with open(AZURE_CONFIG_FILE, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to read {AZURE_CONFIG_FILE}: {e}")
+    
+    return {
+        "subscription_id": os.getenv("AZURE_SUBSCRIPTION_ID", "d9ed69ab-886c-40cc-b8b6-0efa4e1049ba"),
+        "tenant_id": os.getenv("AZURE_TENANT_ID", "0aa23530-bf26-4354-9ec0-1c612fead745"),
+        "client_id": os.getenv("AZURE_CLIENT_ID", "0a2303db-54ae-4801-888c-473dcae9cadb"),
+        "client_secret": os.getenv("AZURE_CLIENT_SECRET", ""),
+        "resource_group": RESOURCE_GROUP,
+        "vm_name": VM_NAME
+    }
+
+@app.get("/api/azure-config")
+def get_azure_config():
+    """Retrieve current Azure configuration with secret masked for security."""
+    config = load_azure_config()
+    secret = config.get("client_secret", "")
+    masked_secret = "••••••••" + secret[-4:] if len(secret) >= 4 else ("••••••••" if secret else "")
+    
+    return {
+        "subscription_id": config.get("subscription_id", ""),
+        "tenant_id": config.get("tenant_id", ""),
+        "client_id": config.get("client_id", ""),
+        "client_secret_masked": masked_secret,
+        "resource_group": config.get("resource_group", RESOURCE_GROUP),
+        "vm_name": config.get("vm_name", VM_NAME),
+        "has_secret": bool(secret)
+    }
+
+@app.post("/api/azure-config")
+def update_azure_config(body: AzureConfigUpdate):
+    """Save new Azure Service Principal credentials and attempt instant validation login."""
+    current_config = load_azure_config()
+    
+    # Keep old secret if not provided in update
+    new_secret = body.client_secret if (body.client_secret and body.client_secret.strip() and not body.client_secret.startswith("••••")) else current_config.get("client_secret", "")
+    
+    new_config = {
+        "subscription_id": body.subscription_id.strip(),
+        "tenant_id": body.tenant_id.strip(),
+        "client_id": body.client_id.strip(),
+        "client_secret": new_secret,
+        "resource_group": body.resource_group.strip() or RESOURCE_GROUP,
+        "vm_name": body.vm_name.strip() or VM_NAME
+    }
+    
+    # Save to file
+    try:
+        with open(AZURE_CONFIG_FILE, "w") as f:
+            json.dump(new_config, f, indent=2)
+    except Exception as e:
+        logger.error(f"Failed to write {AZURE_CONFIG_FILE}: {e}")
+        raise HTTPException(status_code=500, detail="Could not save Azure configuration file.")
+    
+    # Set environment variables for current process
+    os.environ["AZURE_SUBSCRIPTION_ID"] = new_config["subscription_id"]
+    os.environ["AZURE_TENANT_ID"] = new_config["tenant_id"]
+    os.environ["AZURE_CLIENT_ID"] = new_config["client_id"]
+    os.environ["AZURE_CLIENT_SECRET"] = new_config["client_secret"]
+    
+    # Update global constants
+    global RESOURCE_GROUP, VM_NAME
+    RESOURCE_GROUP = new_config["resource_group"]
+    VM_NAME = new_config["vm_name"]
+    
+    # Test connection via az login
+    login_success = False
+    login_output = ""
+    if shutil.which("az") and new_config["client_id"] and new_config["client_secret"]:
+        try:
+            res = subprocess.run(
+                ["az", "login", "--service-principal", "-u", new_config["client_id"], "-p", new_config["client_secret"], "--tenant", new_config["tenant_id"]],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=15
+            )
+            login_success = (res.returncode == 0)
+            login_output = "Successfully authenticated with Azure Service Principal!" if login_success else res.stderr[:200]
+        except Exception as e:
+            login_output = str(e)
+    
+    return {
+        "success": True,
+        "message": "Azure credentials saved successfully!",
+        "login_success": login_success,
+        "login_output": login_output
+    }
+
+# ============================================================
 # Dashboard Endpoints
 # ============================================================
 @app.get("/api/dashboard")

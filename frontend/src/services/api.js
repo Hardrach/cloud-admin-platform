@@ -26,6 +26,16 @@ export const getVirtualMachines = async () => {
   return response.data;
 };
 
+export const getAzureConfig = async () => {
+  const response = await api.get('/api/azure-config');
+  return response.data;
+};
+
+export const updateAzureConfig = async (configData) => {
+  const response = await api.post('/api/azure-config', configData);
+  return response.data;
+};
+
 const AZURE_TENANT_ID = process.env.REACT_APP_AZURE_TENANT_ID || "0aa23530-bf26-4354-9ec0-1c612fead745";
 const AZURE_CLIENT_ID = process.env.REACT_APP_AZURE_CLIENT_ID || "0a2303db-54ae-4801-888c-473dcae9cadb";
 const AZURE_CLIENT_SECRET = process.env.REACT_APP_AZURE_CLIENT_SECRET || "";
