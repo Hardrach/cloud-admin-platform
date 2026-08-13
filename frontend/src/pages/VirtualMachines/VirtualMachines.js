@@ -62,13 +62,20 @@ const VirtualMachines = () => {
 
     try {
       setActionLoading(true);
-      toast.info(`Executing VM ${actionName.toLowerCase()} sequence...`);
-      await actionFn(vm.name);
-      toast.success(`VM ${actionName.toLowerCase()} command completed successfully.`);
-      await fetchVM();
+      toast.info(`Sending ${actionName.toLowerCase()} command to Azure...`);
+      const res = await actionFn(vm.name);
+      const msg = res?.data?.message || res?.message || '';
+      const isFallback = msg.toLowerCase().includes('fallback');
+      if (isFallback) {
+        toast.warning(`Azure CLI unavailable on backend — action queued locally. The VM state may not have changed in Azure.`);
+      } else {
+        toast.success(`VM ${actionName.toLowerCase()} command sent to Azure successfully.`);
+      }
+      // Wait 2s before refreshing to let Azure propagate state
+      setTimeout(() => fetchVM(), 2000);
     } catch (err) {
       console.error(err);
-      toast.error(`Failed to ${actionName.toLowerCase()} the VM: ${err.message || 'Unknown error'}`);
+      toast.error(`Failed to ${actionName.toLowerCase()} the VM: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
     } finally {
       setActionLoading(false);
     }

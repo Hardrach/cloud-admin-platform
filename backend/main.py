@@ -145,18 +145,41 @@ def run_az_command(args: list) -> str:
         logger.exception(e)
         return ""
 
-def run_az_action(args: list) -> bool:
+def run_az_action(args: list, no_wait: bool = True) -> bool:
     """
-    Execute a state-modifying Azure CLI command. Returns True if successful.
+    Execute a state-modifying Azure CLI command.
+    By default uses --no-wait so the API returns immediately without
+    waiting for Azure to complete the operation (which can take minutes).
+    Returns True if the command was dispatched successfully.
     """
     try:
         if not shutil.which("az"):
-            logger.warning("Azure CLI is not installed or available on PATH.")
+            logger.warning("Azure CLI (az) not found on PATH.")
             return False
-        subprocess.run(["az"] + args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return True
+
+        cmd = ["az"] + args
+        if no_wait:
+            cmd.append("--no-wait")
+
+        result = subprocess.run(
+            cmd,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=15   # Only for dispatching the request — should be fast with --no-wait
+        )
+        if result.returncode == 0:
+            logger.info(f"Azure CLI dispatched: az {' '.join(args[:4])}")
+            return True
+        else:
+            err = result.stderr.decode(errors='ignore').strip()
+            logger.warning(f"Azure CLI failed (rc={result.returncode}): {err[:300]}")
+            return False
+    except subprocess.TimeoutExpired:
+        logger.warning(f"Azure CLI dispatch timed out for: az {' '.join(args[:4])}")
+        return False
     except Exception as e:
-        logger.exception(e)
+        logger.exception(f"run_az_action error: {e}")
         return False
 
 def safe_json_loads(text: str, default=None) -> typing.Any:
@@ -436,66 +459,84 @@ def get_vms() -> list:
 @app.post("/api/vms/{name}/start")
 def start_vm(name: str) -> dict:
     """
-    Power on the specified virtual machine.
+    Send a Start command to the Azure VM (non-blocking, --no-wait).
+    Azure will power on the VM in the background.
     """
     global vm_status
-    vm_status = "Running"
-    success = run_az_action([
-        "vm", "start",
-        "--resource-group", RESOURCE_GROUP,
-        "--name", name
-    ])
+    success = run_az_action(["vm", "start", "--resource-group", RESOURCE_GROUP, "--name", name])
     if success:
-        return {"success": True, "message": f"VM {name} started via Azure CLI"}
-    return {"status": "success", "message": f"VM {name} started (Local fallback)"}
+        vm_status = "Starting"
+        return {
+            "success": True,
+            "via": "azure_cli",
+            "message": f"Start command dispatched to Azure for VM '{name}'. The VM will be Running in ~1-2 minutes."
+        }
+    return {
+        "success": False,
+        "via": "fallback",
+        "message": "Azure CLI is not available or not authenticated on this backend host. Please run 'az login' on the server."
+    }
 
 @app.post("/api/vms/{name}/stop")
 def stop_vm(name: str) -> dict:
     """
-    Power off the specified virtual machine.
+    Send a Stop (power-off) command to the Azure VM (non-blocking, --no-wait).
+    NOTE: If the backend runs on this VM, the connection will drop when it shuts down.
     """
     global vm_status
-    vm_status = "Stopped"
-    success = run_az_action([
-        "vm", "stop",
-        "--resource-group", RESOURCE_GROUP,
-        "--name", name
-    ])
+    success = run_az_action(["vm", "stop", "--resource-group", RESOURCE_GROUP, "--name", name])
     if success:
-        return {"success": True, "message": f"VM {name} stopped via Azure CLI"}
-    return {"status": "success", "message": f"VM {name} stopped (Local fallback)"}
+        vm_status = "Stopping"
+        return {
+            "success": True,
+            "via": "azure_cli",
+            "message": f"Stop command dispatched to Azure for VM '{name}'. The VM will shut down in ~1-2 minutes."
+        }
+    return {
+        "success": False,
+        "via": "fallback",
+        "message": "Azure CLI is not available or not authenticated on this backend host. Please run 'az login' on the server."
+    }
 
 @app.post("/api/vms/{name}/restart")
 def restart_vm(name: str) -> dict:
     """
-    Restart the specified virtual machine.
+    Send a Restart command to the Azure VM (non-blocking, --no-wait).
     """
     global vm_status
-    vm_status = "Running"
-    success = run_az_action([
-        "vm", "restart",
-        "--resource-group", RESOURCE_GROUP,
-        "--name", name
-    ])
+    success = run_az_action(["vm", "restart", "--resource-group", RESOURCE_GROUP, "--name", name])
     if success:
-        return {"success": True, "message": f"VM {name} restarted via Azure CLI"}
-    return {"status": "success", "message": f"VM {name} restarted (Local fallback)"}
+        vm_status = "Restarting"
+        return {
+            "success": True,
+            "via": "azure_cli",
+            "message": f"Restart command dispatched to Azure for VM '{name}'. The VM will restart in ~2-3 minutes."
+        }
+    return {
+        "success": False,
+        "via": "fallback",
+        "message": "Azure CLI is not available or not authenticated on this backend host. Please run 'az login' on the server."
+    }
 
 @app.post("/api/vms/{name}/deallocate")
 def deallocate_vm(name: str) -> dict:
     """
-    Deallocate the specified virtual machine to stop billing.
+    Deallocate the Azure VM to stop billing (non-blocking, --no-wait).
     """
     global vm_status
-    vm_status = "Deallocated"
-    success = run_az_action([
-        "vm", "deallocate",
-        "--resource-group", RESOURCE_GROUP,
-        "--name", name
-    ])
+    success = run_az_action(["vm", "deallocate", "--resource-group", RESOURCE_GROUP, "--name", name])
     if success:
-        return {"success": True, "message": f"VM {name} deallocated via Azure CLI"}
-    return {"status": "success", "message": f"VM {name} deallocated (Local fallback)"}
+        vm_status = "Deallocating"
+        return {
+            "success": True,
+            "via": "azure_cli",
+            "message": f"Deallocate command dispatched to Azure for VM '{name}'. Billing will stop in ~2-3 minutes."
+        }
+    return {
+        "success": False,
+        "via": "fallback",
+        "message": "Azure CLI is not available or not authenticated on this backend host. Please run 'az login' on the server."
+    }
 
 # ============================================================
 # Docker
