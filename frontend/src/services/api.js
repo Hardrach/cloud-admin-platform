@@ -29,13 +29,18 @@ export const getVirtualMachines = async () => {
 export const startVirtualMachine = async (name) => {
   const SERVERLESS_URL = process.env.REACT_APP_SERVERLESS_START_URL;
   try {
-    return await api.post(`/api/vms/${name}/start`, {}, { timeout: 8000 });
+    return await api.post(`/api/vms/${name}/start`, {}, { timeout: 15000 });
   } catch (err) {
     const isOffline = err.code === 'ERR_NETWORK' || err.message?.includes('timeout') || !err.response;
     if (isOffline && SERVERLESS_URL) {
       console.warn("Backend API offline — invoking Azure Serverless Start Function...");
       const serverlessRes = await axios.post(SERVERLESS_URL, { name }, { timeout: 15000 });
       return serverlessRes.data;
+    }
+    if (isOffline) {
+      const offlineErr = new Error("HOST_OFFLINE");
+      offlineErr.code = "HOST_OFFLINE";
+      throw offlineErr;
     }
     throw err;
   }
