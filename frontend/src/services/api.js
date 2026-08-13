@@ -47,7 +47,7 @@ export const startAzureVMDirectly = async (vmName = "vm-cloud-admin") => {
   const accessToken = tokenRes.data.access_token;
   const azureApiUrl = `https://management.azure.com/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Compute/virtualMachines/${vmName}/start?api-version=2023-09-01`;
 
-  const azureRes = await axios.post(azureApiUrl, {}, {
+  await axios.post(azureApiUrl, {}, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json"
