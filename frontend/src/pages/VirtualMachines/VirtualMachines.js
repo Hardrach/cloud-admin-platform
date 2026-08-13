@@ -94,8 +94,10 @@ const VirtualMachines = () => {
       } else {
         toast.success(msg || `VM ${actionName.toLowerCase()} command sent to Azure successfully.`);
       }
-      // Wait 3s before refreshing to let Azure propagate state
-      setTimeout(() => fetchVM(), 3000);
+
+      // If starting, wait 15s before refreshing so host OS has time to boot up
+      const delay = actionName === 'Start' ? 15000 : 3000;
+      setTimeout(() => fetchVM(), delay);
     } catch (err) {
       console.error(err);
       const isNetError = err.message?.includes('Network Error') || err.code === 'ERR_NETWORK' || !err.response;
