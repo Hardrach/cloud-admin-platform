@@ -67,8 +67,9 @@ export const startVirtualMachine = async (name) => {
   } catch (err) {
     const isOffline = err.code === 'ERR_NETWORK' || err.message?.includes('timeout') || !err.response;
     if (isOffline) {
-      console.warn("Backend API offline — triggering Azure REST API Start directly...");
-      return await startAzureVMDirectly(name);
+      console.warn("Backend API host offline — invoking Vercel Serverless Start API...");
+      const vercelRes = await axios.post("/api/start-vm", { name }, { timeout: 20000 });
+      return vercelRes.data;
     }
     throw err;
   }
