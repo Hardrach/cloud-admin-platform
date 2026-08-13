@@ -48,6 +48,7 @@ LINUX_KERNEL = "6.17.0-1018-azure"
 def auto_login_azure():
     """
     Attempt automatic Service Principal login if environment variables are provided.
+    Runs asynchronously in a background thread so it never blocks FastAPI startup.
     """
     client_id = os.getenv("AZURE_CLIENT_ID")
     client_secret = os.getenv("AZURE_CLIENT_SECRET")
@@ -55,22 +56,23 @@ def auto_login_azure():
     
     if client_id and client_secret and tenant_id and shutil.which("az"):
         try:
-            logger.info("Attempting Azure Service Principal authentication...")
+            logger.info("Attempting Azure Service Principal authentication in background...")
             res = subprocess.run(
                 ["az", "login", "--service-principal", "-u", client_id, "-p", client_secret, "--tenant", tenant_id],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=15
+                timeout=20
             )
             if res.returncode == 0:
                 logger.info("Successfully authenticated with Azure Service Principal!")
             else:
-                logger.warning(f"Service Principal login failed: {res.stderr}")
+                logger.warning(f"Service Principal login failed: {res.stderr[:200]}")
         except Exception as e:
             logger.error(f"Error during Azure Service Principal auto-login: {e}")
 
-auto_login_azure()
+# Run Azure auto-login in a non-blocking background thread
+threading.Thread(target=auto_login_azure, daemon=True).start()
 
 # ============================================================
 # Utility Functions
@@ -280,10 +282,16 @@ def get_default_gateway() -> str:
 # ============================================================
 app = FastAPI(title="Cloud Admin Platform API", version="0.1.0")
 
-# Enable CORS for the React frontend
+# Enable CORS for the React frontend (supports Vercel, localhost, and custom domains)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://cloud-admin-platform.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "https://cloudadminyassine.duckdns.org",
+    ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
