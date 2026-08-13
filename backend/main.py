@@ -45,6 +45,33 @@ POSTGRES_VERSION = "16"
 API_PORT = 8000
 LINUX_KERNEL = "6.17.0-1018-azure"
 
+def auto_login_azure():
+    """
+    Attempt automatic Service Principal login if environment variables are provided.
+    """
+    client_id = os.getenv("AZURE_CLIENT_ID")
+    client_secret = os.getenv("AZURE_CLIENT_SECRET")
+    tenant_id = os.getenv("AZURE_TENANT_ID")
+    
+    if client_id and client_secret and tenant_id and shutil.which("az"):
+        try:
+            logger.info("Attempting Azure Service Principal authentication...")
+            res = subprocess.run(
+                ["az", "login", "--service-principal", "-u", client_id, "-p", client_secret, "--tenant", tenant_id],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=15
+            )
+            if res.returncode == 0:
+                logger.info("Successfully authenticated with Azure Service Principal!")
+            else:
+                logger.warning(f"Service Principal login failed: {res.stderr}")
+        except Exception as e:
+            logger.error(f"Error during Azure Service Principal auto-login: {e}")
+
+auto_login_azure()
+
 # ============================================================
 # Utility Functions
 # ============================================================

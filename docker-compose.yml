@@ -30,6 +30,10 @@ services:
     environment:
       # Disable Azure CLI telemetry inside container
       AZURE_CORE_COLLECT_TELEMETRY: "false"
+      AZURE_CLIENT_ID: "${AZURE_CLIENT_ID}"
+      AZURE_CLIENT_SECRET: "${AZURE_CLIENT_SECRET}"
+      AZURE_TENANT_ID: "${AZURE_TENANT_ID}"
+      AZURE_SUBSCRIPTION_ID: "${AZURE_SUBSCRIPTION_ID}"
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
