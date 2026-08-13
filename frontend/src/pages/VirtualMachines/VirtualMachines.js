@@ -88,6 +88,9 @@ const VirtualMachines = () => {
       if (isNetError && (actionName === 'Stop' || actionName === 'Deallocate')) {
         setVm(prev => prev ? { ...prev, status: actionName === 'Stop' ? 'Stopped' : 'Deallocated' } : prev);
         toast.info(`VM ${actionName.toLowerCase()} command dispatched. Host server connection closed as Azure powers off the VM.`);
+      } else if (isNetError && actionName === 'Start') {
+        setVm(prev => prev ? { ...prev, status: 'Starting' } : prev);
+        toast.warning(`Host server is powered off. Please start the VM from Azure Portal or Azure CLI, then refresh.`);
       } else {
         toast.error(`Failed to ${actionName.toLowerCase()} the VM: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
       }
